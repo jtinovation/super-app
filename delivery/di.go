@@ -14,6 +14,7 @@ type Container struct {
 	ClassHandler        *handler.ClassHandler
 	EmployeeHandler     *handler.EmployeeHandler
 	MajorHandler        *handler.MajorHandler
+	StudentHandler      *handler.StudentHandler
 	StudyProgramHandler *handler.StudyProgramHandler
 }
 
@@ -35,6 +36,10 @@ func InitContainer(db *gorm.DB, jwtService service.JWTService) *Container {
 	majorUC := usecase.NewMajorUseCase(majorRepo)
 	majorHandler := handler.NewMajorHandler(majorUC)
 
+	studentRepo := repository.NewStudentRepository(db)
+	studentUC := usecase.NewStudentUseCase(db, studentRepo, userRepo)
+	studentHandler := handler.NewStudentHandler(studentUC)
+
 	studyProgramRepo := repository.NewStudyProgramRepository(db)
 	studyProgramUC := usecase.NewStudyProgramUseCase(studyProgramRepo)
 	studyProgramHandler := handler.NewStudyProgramHandler(studyProgramUC)
@@ -44,6 +49,7 @@ func InitContainer(db *gorm.DB, jwtService service.JWTService) *Container {
 		ClassHandler:        classHandler,
 		EmployeeHandler:     employeeHandler,
 		MajorHandler:        majorHandler,
+		StudentHandler:      studentHandler,
 		StudyProgramHandler: studyProgramHandler,
 	}
 }

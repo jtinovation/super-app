@@ -46,6 +46,12 @@ func SetupRoutes(router *gin.Engine, c *Container, jwtService service.JWTService
 			majors.DELETE("/:id", c.MajorHandler.Delete)
 		}
 
+		students := api.Group("/students").Use(middleware.AuthMiddleware(jwtService))
+		{
+			students.GET("", c.StudentHandler.FindAll)
+			students.POST("", c.StudentHandler.Create)
+		}
+
 		studyPrograms := api.Group("/study-programs").Use(middleware.AuthMiddleware(jwtService))
 		{
 			studyPrograms.GET("", c.StudyProgramHandler.FindAll)
