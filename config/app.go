@@ -20,6 +20,16 @@ type Config struct {
 	RedisDB            int
 	JWTSecretKey       string
 	JWTExpirationHours int
+	Minio              MinioConfig
+}
+
+type MinioConfig struct {
+	AccessKeyID     string
+	SecretAccessKey string
+	Bucket          string
+	UseSSL          bool
+	Endpoint        string
+	URL             string
 }
 
 var AppConfig *Config
@@ -43,6 +53,15 @@ func LoadConfig() {
 
 		JWTSecretKey:       getEnv("JWT_SECRET_KEY", "secret"),
 		JWTExpirationHours: getEnvAsInt("JWT_EXPIRATION_HOURS", 72),
+
+		Minio: MinioConfig{
+			AccessKeyID:     getEnv("MINIO_ACCESS_KEY_ID", "minioadmin"),
+			SecretAccessKey: getEnv("MINIO_SECRET_ACCESS_KEY", "minioadmin"),
+			Bucket:          getEnv("MINIO_BUCKET", "your-bucket"),
+			UseSSL:          getEnvAsInt("MINIO_USE_SSL", 1) == 1,
+			Endpoint:        getEnv("MINIO_ENDPOINT", "127.0.0.1:9000"),
+			URL:             getEnv("MINIO_URL", "http://127.0.0.1:9000"),
+		},
 	}
 }
 

@@ -18,6 +18,7 @@ func Server() *AppServer {
 	config.LoadConfig()
 	config.ConnectDatabase()
 	config.ConnectRedis()
+	config.InitMinio()
 	db := config.DB
 	router := gin.Default()
 	jwtService := service.NewJWTService()
