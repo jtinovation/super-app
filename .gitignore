@@ -1,0 +1,44 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Output of the go coverage tool
+*.coverprofile
+*.cover.out
+cover.*
+
+# Dependency directories (remove the comment below if you use Go modules)
+vendor/
+
+# Go workspace file
+go.work
+go.work.sum
+
+# Go module files (optional, if you want to ignore them)
+# go.mod
+# go.sum
+*.sum
+
+# IDE/editor files
+.vscode/
+.idea/
+*.swp
+
+# Logs and environment files
+*.log
+log.txt
+*.env
+
+# Database files (if using SQLite or similar)
+*.db
+*.sqlite
+*.sqlite3
+
+# OS generated files
+.DS_Store
+Thumbs.db
