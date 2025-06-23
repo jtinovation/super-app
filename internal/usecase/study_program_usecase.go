@@ -10,7 +10,7 @@ import (
 type StudyProgramUseCase interface {
 	FindAll(params dto.QueryParams, majorId string) (*[]domain.StudyProgram, int64, error)
 	FindByID(id string) (*domain.StudyProgram, error)
-	FindAllAsOptions() (*[]domain.StudyProgram, error)
+	FindAllAsOptions(majorId string) (*[]domain.StudyProgram, error)
 	Create(dto *dto.StoreStudyProgramDTO) (*domain.StudyProgram, error)
 	Update(id string, dto *dto.UpdateStudyProgramDTO) (*domain.StudyProgram, error)
 	Delete(id string) error
@@ -31,8 +31,8 @@ func (u *studyProgramUseCase) FindAll(params dto.QueryParams, majorId string) (*
 func (u *studyProgramUseCase) FindByID(id string) (*domain.StudyProgram, error) {
 	return u.repo.FindByID(id)
 }
-func (u *studyProgramUseCase) FindAllAsOptions() (*[]domain.StudyProgram, error) {
-	return u.repo.FindAllAsOptions()
+func (u *studyProgramUseCase) FindAllAsOptions(majorId string) (*[]domain.StudyProgram, error) {
+	return u.repo.FindAllAsOptions(majorId)
 }
 
 func (u *studyProgramUseCase) Create(dto *dto.StoreStudyProgramDTO) (*domain.StudyProgram, error) {

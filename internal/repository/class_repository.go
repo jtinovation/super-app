@@ -76,9 +76,14 @@ func (r *classRepository) FindByID(id string) (*domain.Class, error) {
 	return &class, nil
 }
 
-func (r *classRepository) FindAllAsOptions() (*[]domain.Class, error) {
+func (r *classRepository) FindAllAsOptions(studyProgramId string) (*[]domain.Class, error) {
 	var classs []domain.Class
-	if err := r.db.Select("id", "name").Find(&classs).Error; err != nil {
+	query := r.db.Select("id", "name")
+	if studyProgramId != "" {
+		query = query.Where("m_study_program_id = ?", studyProgramId)
+	}
+
+	if err := query.Find(&classs).Error; err != nil {
 		return nil, err
 	}
 	return &classs, nil

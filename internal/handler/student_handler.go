@@ -24,7 +24,9 @@ func (h *StudentHandler) FindAll(c *gin.Context) {
 		return
 	}
 
-	students, totalRows, err := h.useCase.FindAll(*params)
+	classId := c.Query("class_id")
+
+	students, totalRows, err := h.useCase.FindAll(*params, &classId)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusInternalServerError, "Failed to fetch students", err)
 		return

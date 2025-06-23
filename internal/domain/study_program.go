@@ -29,7 +29,7 @@ func (StudyProgram) TableName() string {
 type StudyProgramRepository interface {
 	FindAll(params dto.QueryParams, majorId string) (*[]StudyProgram, int64, error)
 	FindByID(id string) (*StudyProgram, error)
-	FindAllAsOptions() (*[]StudyProgram, error)
+	FindAllAsOptions(majorId string) (*[]StudyProgram, error)
 	Create(studyProgram *StudyProgram) (*StudyProgram, error)
 	Update(id string, studyProgram *StudyProgram) (*StudyProgram, error)
 	Delete(id string) error

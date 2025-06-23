@@ -92,7 +92,8 @@ func (h *StudyProgramHandler) Create(c *gin.Context) {
 }
 
 func (h *StudyProgramHandler) FindAllAsOptions(c *gin.Context) {
-	studyPrograms, err := h.useCase.FindAllAsOptions()
+	majorId := c.Query("major_id")
+	studyPrograms, err := h.useCase.FindAllAsOptions(majorId)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusInternalServerError, "Failed to fetch studyPrograms", err)
 		return

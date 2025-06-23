@@ -68,9 +68,13 @@ func (r *studyProgramRepository) FindByID(id string) (*domain.StudyProgram, erro
 	return &studyProgram, nil
 }
 
-func (r *studyProgramRepository) FindAllAsOptions() (*[]domain.StudyProgram, error) {
+func (r *studyProgramRepository) FindAllAsOptions(majorId string) (*[]domain.StudyProgram, error) {
 	var studyPrograms []domain.StudyProgram
-	if err := r.db.Select("id", "name").Find(&studyPrograms).Error; err != nil {
+	query := r.db.Select("id", "name")
+	if majorId != "" {
+		query = query.Where("m_major_id = ?", majorId)
+	}
+	if err := query.Find(&studyPrograms).Error; err != nil {
 		return nil, err
 	}
 	return &studyPrograms, nil

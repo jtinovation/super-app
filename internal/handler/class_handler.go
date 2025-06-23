@@ -97,13 +97,14 @@ func (h *ClassHandler) Create(c *gin.Context) {
 }
 
 func (h *ClassHandler) FindAllAsOptions(c *gin.Context) {
-	classs, err := h.useCase.FindAllAsOptions()
+	studyProgramId := c.Query("study_program_id")
+	classs, err := h.useCase.FindAllAsOptions(studyProgramId)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusInternalServerError, "Failed to fetch classs", err)
 		return
 	}
 
-	var optionResource []dto.Option
+	optionResource := []dto.Option{}
 	for _, class := range *classs {
 		optionResource = append(optionResource, dto.Option{
 			Label: class.Name,

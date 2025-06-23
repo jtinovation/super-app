@@ -17,7 +17,7 @@ import (
 )
 
 type StudentUseCase interface {
-	FindAll(params dto.QueryParams) (*[]domain.Student, int64, error)
+	FindAll(params dto.QueryParams, classId *string) (*[]domain.Student, int64, error)
 	Create(payload *dto.StoreStudentDTO) (*domain.Student, error)
 }
 
@@ -35,8 +35,8 @@ func NewStudentUseCase(db *gorm.DB, studentRepo domain.StudentRepository, userRe
 	}
 }
 
-func (u *studentUseCase) FindAll(params dto.QueryParams) (*[]domain.Student, int64, error) {
-	return u.studentRepo.FindAll(params)
+func (u *studentUseCase) FindAll(params dto.QueryParams, classId *string) (*[]domain.Student, int64, error) {
+	return u.studentRepo.FindAll(params, classId)
 }
 
 func (u *studentUseCase) Create(payload *dto.StoreStudentDTO) (*domain.Student, error) {

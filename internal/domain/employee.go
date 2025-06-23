@@ -17,12 +17,10 @@ type Employee struct {
 	UpdatedAt time.Time
 	DeletedAt gorm.DeletedAt `gorm:"index"`
 
-	// Relationships
-	User  User  `gorm:"foreignKey:UserID;references:ID"`
-	Major Major `gorm:"foreignKey:MajorID;references:ID"`
+	User             User              `gorm:"foreignKey:UserID;references:ID"`
+	Major            Major             `gorm:"foreignKey:MajorID;references:ID"`
+	SubjectSemesters []SubjectSemester `gorm:"many2many:m_subject_lecture;using:jti-super-app-go/internal/domain.SubjectLecture;foreignKey:ID;joinForeignKey:m_employee_id;References:ID;joinReferences:m_subject_semester_id"`
 
-	// Fields from join for FindAll operation
-	// Based on select('m_employee.*', 'm_user.name as name', ...) in EmployeeRepository.php
 	Name    string `json:"name" gorm:"column:name;<-:false;->"`
 	Email   string `json:"email" gorm:"column:email;<-:false;->"`
 	ImgPath string `json:"img_path" gorm:"column:img_path;<-:false;->"`
@@ -33,7 +31,6 @@ func (Employee) TableName() string {
 	return "m_employee"
 }
 
-// Based on EmployeeRepositoryInterface.php
 type EmployeeRepository interface {
 	FindAll(params dto.QueryParams, position string, majorId string) (*[]Employee, int64, error)
 	FindByID(id string) (*Employee, error)

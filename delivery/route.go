@@ -46,6 +46,25 @@ func SetupRoutes(router *gin.Engine, c *Container, jwtService service.JWTService
 			majors.DELETE("/:id", c.MajorHandler.Delete)
 		}
 
+		semesters := api.Group("/semesters").Use(middleware.AuthMiddleware(jwtService))
+		{
+			semesters.GET("", c.SemesterHandler.FindAll)
+			semesters.GET("/options", c.SemesterHandler.FindAllAsOptions)
+			semesters.POST("", c.SemesterHandler.Create)
+			semesters.PUT("/:id", c.SemesterHandler.Update)
+			semesters.DELETE("/:id", c.SemesterHandler.Delete)
+			semesters.POST("/:id/setting-subjects", c.SemesterHandler.SettingSubjectSemester)
+		}
+
+		sessions := api.Group("/sessions").Use(middleware.AuthMiddleware(jwtService))
+		{
+			sessions.GET("", c.SessionHandler.FindAll)
+			sessions.GET("/options", c.SessionHandler.FindAllAsOptions)
+			sessions.POST("", c.SessionHandler.Create)
+			sessions.PUT("/:id", c.SessionHandler.Update)
+			sessions.DELETE("/:id", c.SessionHandler.Delete)
+		}
+
 		students := api.Group("/students").Use(middleware.AuthMiddleware(jwtService))
 		{
 			students.GET("", c.StudentHandler.FindAll)
@@ -60,6 +79,17 @@ func SetupRoutes(router *gin.Engine, c *Container, jwtService service.JWTService
 			studyPrograms.POST("", c.StudyProgramHandler.Create)
 			studyPrograms.PUT("/:id", c.StudyProgramHandler.Update)
 			studyPrograms.DELETE("/:id", c.StudyProgramHandler.Delete)
+		}
+
+		subjects := api.Group("/subjects").Use(middleware.AuthMiddleware(jwtService))
+		{
+			subjects.GET("", c.SubjectHandler.FindAll)
+			subjects.GET("/options", c.SubjectHandler.FindAllAsOptions)
+			subjects.POST("", c.SubjectHandler.Create)
+			subjects.PUT("/:id", c.SubjectHandler.Update)
+			subjects.DELETE("/:id", c.SubjectHandler.Delete)
+			subjects.GET("/lectures", c.SubjectHandler.GetLectureOnSubject)
+			subjects.POST("/lectures", c.SubjectHandler.StoreLectureOnSubject)
 		}
 	}
 }

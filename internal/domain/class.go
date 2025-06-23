@@ -30,7 +30,7 @@ func (Class) TableName() string {
 type ClassRepository interface {
 	FindAll(params dto.QueryParams, studyProgramId string, majorId string) (*[]Class, int64, error)
 	FindByID(id string) (*Class, error)
-	FindAllAsOptions() (*[]Class, error)
+	FindAllAsOptions(studyProgramId string) (*[]Class, error)
 	Create(class *Class) (*Class, error)
 	Update(id string, class *Class) (*Class, error)
 	Delete(id string) error
