@@ -43,7 +43,12 @@ func (r *semesterRepository) FindAll(params dto.QueryParams) (*[]domain.Semester
 	}
 
 	if params.Sort != "" {
-		sortOrder := fmt.Sprintf("%s %s", params.Sort, params.Order)
+		var sortOrder string
+		if params.Sort == "session.session" {
+			sortOrder = fmt.Sprintf("m_session.session %s", params.Order)
+		} else {
+			sortOrder = fmt.Sprintf("%s %s", params.Sort, params.Order)
+		}
 		query = query.Order(sortOrder)
 	} else {
 		query = query.Order("m_semester.year desc, m_semester.semester desc")

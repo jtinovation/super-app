@@ -75,20 +75,26 @@ func (r *studentRepository) FindAll(params dto.QueryParams, classId *string) (*[
 		}
 	}
 
-	// Count total rows
 	if err := query.Count(&totalRows).Error; err != nil {
 		return nil, 0, err
 	}
 
-	// Sorting
 	if params.Sort != "" {
-		sortOrder := fmt.Sprintf("%s %s", params.Sort, params.Order)
+		var sortOrder string
+		if params.Sort == "major.name" {
+			sortOrder = fmt.Sprintf("m_major.name %s", params.Order)
+		} else if params.Sort == "study_program.name" {
+			sortOrder = fmt.Sprintf("m_study_program.name %s", params.Order)
+		} else if params.Sort == "class.name" {
+			sortOrder = fmt.Sprintf("m_class.name %s", params.Order)
+		} else {
+			sortOrder = fmt.Sprintf("%s %s", params.Sort, params.Order)
+		}
 		query = query.Order(sortOrder)
 	} else {
 		query = query.Order("name asc")
 	}
 
-	// Pagination
 	offset := (params.Page - 1) * params.PerPage
 	query = query.Offset(offset).Limit(params.PerPage)
 
