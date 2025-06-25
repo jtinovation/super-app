@@ -24,9 +24,7 @@ func (h *StudentHandler) FindAll(c *gin.Context) {
 		return
 	}
 
-	classId := c.Query("class_id")
-
-	students, totalRows, err := h.useCase.FindAll(*params, &classId)
+	students, totalRows, err := h.useCase.FindAll(*params)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusInternalServerError, "Failed to fetch students", err)
 		return
@@ -44,7 +42,6 @@ func (h *StudentHandler) FindAll(c *gin.Context) {
 			Name:         s.Name,
 			Generation:   s.Generation,
 			Avatar:       avatarURL,
-			Class:        dto.ClassOptionResource{ID: s.ClassID, Name: s.ClassName},
 			StudyProgram: dto.StudyProgramOptionResource{ID: s.StudyProgramID, Name: s.StudyProgramName},
 			Major:        dto.MajorOptionResource{ID: s.MajorID, Name: s.MajorName},
 		})

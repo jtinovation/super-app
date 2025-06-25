@@ -17,7 +17,7 @@ func NewStudentRepository(db *gorm.DB) domain.StudentRepository {
 	return &studentRepository{db: db}
 }
 
-func (r *studentRepository) FindAll(params dto.QueryParams, classId *string) (*[]domain.Student, int64, error) {
+func (r *studentRepository) FindAll(params dto.QueryParams) (*[]domain.Student, int64, error) {
 	var students []domain.Student
 	var totalRows int64
 
@@ -28,18 +28,14 @@ func (r *studentRepository) FindAll(params dto.QueryParams, classId *string) (*[
 			"m_user.name as name",
 			"m_user.img_path",
 			"m_user.img_name",
-			"m_class.name as class_name",
-			"m_class.id as class_id",
 			"m_study_program.name as study_program_name",
 			"m_study_program.id as study_program_id",
 			"m_major.name as major_name",
 			"m_major.id as major_id",
 		).
 		Joins("LEFT JOIN m_user ON m_user.id = m_student.m_user_id").
-		Joins("LEFT JOIN m_class ON m_class.id = m_student.m_class_id").
-		Joins("LEFT JOIN m_study_program ON m_study_program.id = m_class.m_study_program_id").
-		Joins("LEFT JOIN m_major ON m_major.id = m_study_program.m_major_id").
-		Joins("JOIN m_student_semester ON m_student_semester.m_student_id = m_student.id")
+		Joins("LEFT JOIN m_study_program ON m_study_program.id = m_student.m_study_program_id").
+		Joins("LEFT JOIN m_major ON m_major.id = m_study_program.m_major_id")
 
 	// Search
 	if params.Search != "" {
@@ -48,15 +44,9 @@ func (r *studentRepository) FindAll(params dto.QueryParams, classId *string) (*[
 			r.db.Where("LOWER(m_user.name) LIKE ?", searchQuery).
 				Or("LOWER(m_student.nim) LIKE ?", searchQuery).
 				Or("LOWER(m_student.generation) LIKE ?", searchQuery).
-				Or("LOWER(m_class.name) LIKE ?", searchQuery).
 				Or("LOWER(m_study_program.name) LIKE ?", searchQuery).
 				Or("LOWER(m_major.name) LIKE ?", searchQuery),
 		)
-	}
-
-	// Filter by classId
-	if classId != nil && *classId != "" {
-		query = query.Where("m_student.m_class_id = ?", *classId)
 	}
 
 	// Filters
@@ -67,11 +57,12 @@ func (r *studentRepository) FindAll(params dto.QueryParams, classId *string) (*[
 		if spID, ok := params.Filter["study_program_id"]; ok && spID != "" {
 			query = query.Where("m_study_program.id = ?", spID)
 		}
-		if classID, ok := params.Filter["class_id"]; ok && classID != "" {
-			query = query.Where("m_class.id = ?", classID)
-		}
-		if semesterID, ok := params.Filter["semester_id"]; ok && semesterID != "" {
-			query = query.Where("m_student_semester.m_semester_id = ?", semesterID)
+
+		semesterID, semesterOk := params.Filter["semester_id"]
+		class, classOk := params.Filter["class"]
+		if semesterOk && semesterID != "" && classOk && class != "" {
+			query = query.Joins("JOIN m_student_semester ON m_student_semester.m_student_id = m_student.id").
+				Where("m_student_semester.m_semester_id = ? AND m_student_semester.class = ?", semesterID, class)
 		}
 	}
 
@@ -107,7 +98,7 @@ func (r *studentRepository) FindAll(params dto.QueryParams, classId *string) (*[
 
 func (r *studentRepository) FindByID(id string) (*domain.Student, error) {
 	var student domain.Student
-	if err := r.db.Preload("User").Preload("Class").First(&student, "id = ?", id).Error; err != nil {
+	if err := r.db.Preload("User").First(&student, "id = ?", id).Error; err != nil {
 		return nil, err
 	}
 	return &student, nil

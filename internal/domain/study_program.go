@@ -16,8 +16,7 @@ type StudyProgram struct {
 	UpdatedAt time.Time
 	DeletedAt gorm.DeletedAt `gorm:"index"`
 
-	Major Major   `gorm:"foreignKey:MajorID;references:ID"`
-	Class []Class `gorm:"foreignKey:StudyProgramID;references:ID"`
+	Major Major `gorm:"foreignKey:MajorID;references:ID"`
 
 	MajorName string `json:"major_name" gorm:"column:major_name;<-:false;->"`
 }

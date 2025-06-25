@@ -3,7 +3,6 @@ package dto
 import "mime/multipart"
 
 type StoreStudentDTO struct {
-	ClassID       string  `form:"class_id" binding:"required,uuid"`
 	Name          string  `form:"name" binding:"required,max=255"`
 	NIM           string  `form:"nim" binding:"required,max=255"`
 	Generation    *int    `form:"generation" binding:"omitempty,number"`
@@ -22,7 +21,7 @@ type StudentResource struct {
 	NIM          string                     `json:"nim"`
 	Name         string                     `json:"name"`
 	Generation   *int                       `json:"generation"`
-	Class        ClassOptionResource        `json:"class"`
+	Class        string                     `json:"class,omitempty"`
 	StudyProgram StudyProgramOptionResource `json:"study_program"`
 	Major        MajorOptionResource        `json:"major"`
 	Avatar       string                     `json:"avatar,omitempty"`
