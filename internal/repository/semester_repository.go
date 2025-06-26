@@ -73,7 +73,7 @@ func (r *semesterRepository) FindByID(id string) (*domain.Semester, error) {
 
 func (r *semesterRepository) FindAllAsOptions(sessionID string) (*[]domain.Semester, error) {
 	var semesters []domain.Semester
-	query := r.db.Select("id", "year", "semester")
+	query := r.db.Select("id", "year", "semester").Order("semester, year")
 	if sessionID != "" {
 		query = query.Where("m_session_id = ?", sessionID)
 	}

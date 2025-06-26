@@ -21,6 +21,7 @@ func (r *subjectSemesterRepository) GetLectureOnSubject(studyProgramID, semester
 		Joins("JOIN m_subject ON m_subject.id = m_subject_semester.m_subject_id").
 		Where("m_subject.m_study_program_id = ?", studyProgramID).
 		Where("m_subject_semester.m_semester_id = ?", semesterID).
+		Order("m_subject.name ASC").
 		Find(&subjectSemesters).Error
 	return &subjectSemesters, err
 }

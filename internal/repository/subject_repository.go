@@ -64,8 +64,11 @@ func (r *subjectRepository) FindAll(params dto.QueryParams) (*[]domain.Subject, 
 
 func (r *subjectRepository) FindAllAsOptions(studyProgramID, semesterID string) (*[]domain.Subject, error) {
 	var subjects []domain.Subject
-	query := r.db.Model(&domain.Subject{}).Select([]string{
-		"m_subject.id", "m_subject.code", "m_subject.name"}).Where("m_subject.status = ?", constants.StatusActive)
+
+	query := r.db.Table("m_subject").
+		Select("MIN(m_subject.id) as id, m_subject.code, MIN(m_subject.name) as name").
+		Where("m_subject.status = ?", constants.StatusActive).
+		Where("m_subject.deleted_at IS NULL")
 
 	if studyProgramID != "" {
 		query = query.Where("m_subject.m_study_program_id = ?", studyProgramID)
@@ -76,7 +79,11 @@ func (r *subjectRepository) FindAllAsOptions(studyProgramID, semesterID string) 
 			Where("m_subject_semester.m_semester_id = ?", semesterID)
 	}
 
-	err := query.Order("m_subject.name asc").Find(&subjects).Error
+	err := query.
+		Group("m_subject.code").
+		Order("name asc").
+		Scan(&subjects).Error
+
 	return &subjects, err
 }
 
