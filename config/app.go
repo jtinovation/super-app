@@ -9,6 +9,7 @@ import (
 )
 
 type Config struct {
+	FrontendURL        string
 	ServerPort         int
 	DBHost             string
 	DBPort             int
@@ -21,6 +22,7 @@ type Config struct {
 	JWTSecretKey       string
 	JWTExpirationHours int
 	Minio              MinioConfig
+	Email              EmailConfig
 }
 
 type MinioConfig struct {
@@ -32,6 +34,15 @@ type MinioConfig struct {
 	URL             string
 }
 
+type EmailConfig struct {
+	Host        string
+	Port        int
+	User        string
+	Password    string
+	SenderName  string
+	SenderEmail string
+}
+
 var AppConfig *Config
 
 func LoadConfig() {
@@ -40,12 +51,13 @@ func LoadConfig() {
 	}
 
 	AppConfig = &Config{
-		ServerPort: getEnvAsInt("APP_PORT", 8080),
-		DBHost:     getEnv("DB_HOST", "127.0.0.1"),
-		DBPort:     getEnvAsInt("DB_PORT", 3306),
-		DBUser:     getEnv("DB_USER", "root"),
-		DBPassword: getEnv("DB_PASSWORD", ""),
-		DBName:     getEnv("DB_NAME", "your_db"),
+		FrontendURL: getEnv("APP_FRONTEND_URL", "http://localhost:3000"),
+		ServerPort:  getEnvAsInt("APP_PORT", 8080),
+		DBHost:      getEnv("DB_HOST", "127.0.0.1"),
+		DBPort:      getEnvAsInt("DB_PORT", 3306),
+		DBUser:      getEnv("DB_USER", "root"),
+		DBPassword:  getEnv("DB_PASSWORD", ""),
+		DBName:      getEnv("DB_NAME", "your_db"),
 
 		RedisAddr:     getEnv("REDIS_ADDR", "127.0.0.1:6379"),
 		RedisPassword: getEnv("REDIS_PASSWORD", ""),
@@ -61,6 +73,15 @@ func LoadConfig() {
 			UseSSL:          getEnvAsInt("MINIO_USE_SSL", 1) == 1,
 			Endpoint:        getEnv("MINIO_ENDPOINT", "127.0.0.1:9000"),
 			URL:             getEnv("MINIO_URL", "http://127.0.0.1:9000"),
+		},
+
+		Email: EmailConfig{
+			Host:        getEnv("MAIL_HOST", "smtp.mailtrap.io"),
+			Port:        getEnvAsInt("MAIL_PORT", 587),
+			User:        getEnv("MAIL_USERNAME", ""),
+			Password:    getEnv("MAIL_PASSWORD", ""),
+			SenderName:  getEnv("MAIL_FROM_NAME", "JTI Super App"),
+			SenderEmail: getEnv("MAIL_FROM_ADDRESS", "no-reply-jti@polije.ac.id"),
 		},
 	}
 }

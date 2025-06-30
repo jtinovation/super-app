@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Verifikasi Email Anda</title>
+  </head>
+  <body
+    style="
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+    ">
+    <table
+      align="center"
+      border="0"
+      cellpadding="0"
+      cellspacing="0"
+      width="600"
+      style="
+        border-collapse: collapse;
+        margin: 20px auto;
+        border: 1px solid #cccccc;
+        background-color: #ffffff;
+      ">
+      <tr>
+        <td
+          align="center"
+          style="padding: 40px 0 30px 0; background-color: #0056b3">
+          <img
+            src="{{.LogoURL}}"
+            alt="JTI Logo"
+            width="120"
+            style="display: block" />
+        </td>
+      </tr>
+      <tr>
+        <td style="padding: 40px 30px 40px 30px">
+          <table border="0" cellpadding="0" cellspacing="0" width="100%">
+            <tr>
+              <td style="color: #153643; font-size: 24px; font-weight: bold">
+                Verifikasi Alamat Email Anda
+              </td>
+            </tr>
+            <tr>
+              <td
+                style="
+                  padding: 20px 0 30px 0;
+                  color: #153643;
+                  font-size: 16px;
+                  line-height: 24px;
+                ">
+                Halo <b>{{.Name}}</b>,<br /><br />
+                Selamat datang di JTI Super App! Terima kasih telah mendaftar.
+                Silakan klik tombol di bawah ini untuk memverifikasi alamat
+                email Anda.
+              </td>
+            </tr>
+            <tr>
+              <td align="center">
+                <a
+                  href="{{.Link}}"
+                  style="
+                    display: inline-block;
+                    padding: 12px 25px;
+                    font-size: 16px;
+                    color: #ffffff;
+                    background-color: #28a745;
+                    text-decoration: none;
+                    border-radius: 5px;
+                  ">
+                  Verifikasi Email
+                </a>
+              </td>
+            </tr>
+            <tr>
+              <td
+                style="
+                  padding: 30px 0 10px 0;
+                  color: #555555;
+                  font-size: 14px;
+                  line-height: 20px;
+                ">
+                Jika Anda kesulitan mengklik tombol di atas, salin dan tempel
+                URL di bawah ini ke browser web Anda:
+                <br />
+                <a
+                  href="{{.Link}}"
+                  style="color: #0056b3; word-break: break-all"
+                  >{{.Link}}</a
+                >
+              </td>
+            </tr>
+            <tr>
+              <td
+                style="
+                  padding: 20px 0 0 0;
+                  color: #555555;
+                  font-size: 14px;
+                  line-height: 20px;
+                ">
+                Tautan ini akan kedaluwarsa dalam 15 menit. Jika Anda tidak
+                merasa mendaftar, Anda bisa mengabaikan email ini.
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      <tr>
+        <td
+          style="
+            padding: 30px;
+            text-align: center;
+            font-size: 12px;
+            color: #888888;
+            background-color: #f4f4f4;
+          ">
+          &copy; 2024 JTI Politeknik Negeri Jember. Semua Hak Cipta Dilindungi.
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

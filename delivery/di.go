@@ -1,6 +1,7 @@
 package delivery
 
 import (
+	"jti-super-app-go/config"
 	"jti-super-app-go/internal/handler"
 	"jti-super-app-go/internal/repository"
 	"jti-super-app-go/internal/service"
@@ -21,11 +22,15 @@ type Container struct {
 }
 
 func InitContainer(db *gorm.DB, jwtService service.JWTService) *Container {
+	emailService := service.NewEmailService(config.AppConfig.Email)
+
 	authRepo := repository.NewAuthRepository(db)
-	authUC := usecase.NewAuthUseCase(authRepo, jwtService)
+	userRepo := repository.NewUserRepository(db)
+	passwordResetRepo := repository.NewPasswordResetRepository(db)
+
+	authUC := usecase.NewAuthUseCase(authRepo, userRepo, passwordResetRepo, jwtService, emailService)
 	authHandler := handler.NewAuthHandler(authUC)
 
-	userRepo := repository.NewUserRepository(db)
 	employeeRepo := repository.NewEmployeeRepository(db)
 	employeeUC := usecase.NewEmployeeUseCase(db, employeeRepo, userRepo)
 	employeeHandler := handler.NewEmployeeHandler(employeeUC)
