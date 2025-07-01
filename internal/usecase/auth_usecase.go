@@ -19,6 +19,7 @@ import (
 
 type AuthUseCase interface {
 	Login(req dto.LoginRequestDTO) (*dto.LoginResponseDTO, error)
+	LoginWithGoogle(userInfo *service.GoogleUserInfo) (*dto.LoginResponseDTO, error)
 	Logout(tokenString string) error
 	VerifyEmail(token string) error
 	ResendVerificationEmail(email string) error
@@ -59,6 +60,44 @@ func (uc *authUseCase) Login(req dto.LoginRequestDTO) (*dto.LoginResponseDTO, er
 		go uc.ResendVerificationEmail(user.Email)
 
 		return nil, errors.New("please verify your email address, a new verification link has been sent")
+	}
+
+	var roleNames []string
+	var permissionNames []string
+	permissionSet := make(map[string]struct{})
+
+	for _, role := range user.Roles {
+		roleNames = append(roleNames, role.Name)
+		for _, perm := range role.Permissions {
+			permissionSet[perm.Name] = struct{}{}
+		}
+	}
+
+	for perm := range permissionSet {
+		permissionNames = append(permissionNames, perm)
+	}
+
+	token, err := uc.jwtService.GenerateToken(user.ID, roleNames, permissionNames)
+	if err != nil {
+		return nil, errors.New("could not generate token")
+	}
+
+	return &dto.LoginResponseDTO{
+		Token: token,
+		User: dto.UserLoginInfo{
+			ID:          user.ID,
+			Name:        user.Name,
+			Email:       user.Email,
+			Roles:       roleNames,
+			Permissions: permissionNames,
+		},
+	}, nil
+}
+
+func (uc *authUseCase) LoginWithGoogle(userInfo *service.GoogleUserInfo) (*dto.LoginResponseDTO, error) {
+	user, err := uc.authRepo.FindByEmail(userInfo.Email)
+	if err != nil {
+		return nil, errors.New("email not registered")
 	}
 
 	var roleNames []string

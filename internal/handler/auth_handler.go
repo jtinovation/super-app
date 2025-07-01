@@ -1,21 +1,29 @@
 package handler
 
 import (
+	"encoding/base64"
+	"encoding/json"
 	"errors"
+	"fmt"
 	"jti-super-app-go/internal/dto"
+	"jti-super-app-go/internal/service"
 	"jti-super-app-go/internal/usecase"
+	"jti-super-app-go/pkg/constants"
 	"jti-super-app-go/pkg/helper"
 	"net/http"
+
+	"github.com/google/uuid"
 
 	"github.com/gin-gonic/gin"
 )
 
 type AuthHandler struct {
-	useCase usecase.AuthUseCase
+	useCase           usecase.AuthUseCase
+	googleAuthService service.GoogleAuthService
 }
 
-func NewAuthHandler(uc usecase.AuthUseCase) *AuthHandler {
-	return &AuthHandler{useCase: uc}
+func NewAuthHandler(uc usecase.AuthUseCase, gas service.GoogleAuthService) *AuthHandler {
+	return &AuthHandler{useCase: uc, googleAuthService: gas}
 }
 
 func (h *AuthHandler) Login(c *gin.Context) {
@@ -32,6 +40,54 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	}
 
 	helper.SuccessResponse(c, http.StatusOK, "Login successful", res)
+}
+
+func (h *AuthHandler) GoogleLogin(c *gin.Context) {
+	state := uuid.NewString()
+	host := c.Request.Header.Get("Referer")
+	fmt.Print("request header: ", c.Request.Header)
+	fmt.Println("request host: ", host)
+
+	c.SetCookie("oauth_state", state, 3600, "/api/v1/auth/google/callback", c.Request.URL.Hostname(), false, true)
+	c.SetCookie("host", host, 3600, "/api/v1/auth/google/callback", c.Request.URL.Hostname(), false, true)
+
+	url := h.googleAuthService.GenerateAuthURL(state)
+	c.Redirect(http.StatusTemporaryRedirect, url)
+}
+
+func (h *AuthHandler) GoogleCallback(c *gin.Context) {
+	stateFromCookie, err := c.Cookie("oauth_state")
+	hostFromCookie, _ := c.Cookie("host")
+
+	fmt.Println("Host from cookie:", hostFromCookie)
+
+	if err != nil {
+		c.Redirect(http.StatusTemporaryRedirect, hostFromCookie+constants.CALLBACK_FRONTEND+"?error="+base64.URLEncoding.EncodeToString([]byte("State cookie not found")))
+		return
+	}
+	if c.Query("state") != stateFromCookie {
+		c.Redirect(http.StatusTemporaryRedirect, hostFromCookie+constants.CALLBACK_FRONTEND+"?error="+base64.URLEncoding.EncodeToString([]byte("Invalid state parameter")))
+		return
+	}
+
+	code := c.Query("code")
+	userInfo, err := h.googleAuthService.GetUserInfo(code)
+	if err != nil {
+		encodeError := base64.URLEncoding.EncodeToString([]byte(err.Error()))
+		c.Redirect(http.StatusTemporaryRedirect, hostFromCookie+constants.CALLBACK_FRONTEND+"?error="+encodeError)
+		return
+	}
+
+	res, err := h.useCase.LoginWithGoogle(userInfo)
+	if err != nil {
+		encodeError := base64.URLEncoding.EncodeToString([]byte(err.Error()))
+		c.Redirect(http.StatusTemporaryRedirect, hostFromCookie+constants.CALLBACK_FRONTEND+"?error="+encodeError)
+		return
+	}
+
+	userInfoJSON, _ := json.Marshal(res.User)
+	encodedUser := base64.URLEncoding.EncodeToString(userInfoJSON)
+	c.Redirect(http.StatusPermanentRedirect, hostFromCookie+constants.CALLBACK_FRONTEND+"?token="+res.Token+"&user="+encodedUser)
 }
 
 func (h *AuthHandler) Logout(c *gin.Context) {

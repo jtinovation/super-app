@@ -9,6 +9,7 @@ import (
 )
 
 type Config struct {
+	AppUrl             string
 	FrontendURL        string
 	ServerPort         int
 	DBHost             string
@@ -23,6 +24,8 @@ type Config struct {
 	JWTExpirationHours int
 	Minio              MinioConfig
 	Email              EmailConfig
+	GoogleClientID     string
+	GoogleClientSecret string
 }
 
 type MinioConfig struct {
@@ -51,6 +54,7 @@ func LoadConfig() {
 	}
 
 	AppConfig = &Config{
+		AppUrl:      getEnv("APP_URL", "http://localhost:8000"),
 		FrontendURL: getEnv("APP_FRONTEND_URL", "http://localhost:3000"),
 		ServerPort:  getEnvAsInt("APP_PORT", 8080),
 		DBHost:      getEnv("DB_HOST", "127.0.0.1"),
@@ -83,6 +87,8 @@ func LoadConfig() {
 			SenderName:  getEnv("MAIL_FROM_NAME", "JTI Super App"),
 			SenderEmail: getEnv("MAIL_FROM_ADDRESS", "no-reply-jti@polije.ac.id"),
 		},
+		GoogleClientID:     getEnv("GOOGLE_CLIENT_ID", ""),
+		GoogleClientSecret: getEnv("GOOGLE_CLIENT_SECRET", ""),
 	}
 }
 

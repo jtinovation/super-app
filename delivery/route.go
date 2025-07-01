@@ -12,6 +12,8 @@ func SetupRoutes(router *gin.Engine, c *Container, jwtService service.JWTService
 	{
 		auth := api.Group("/auth")
 		{
+			auth.GET("/google/login", c.AuthHandler.GoogleLogin)
+			auth.GET("/google/callback", c.AuthHandler.GoogleCallback)
 			auth.POST("/login", c.AuthHandler.Login)
 			auth.POST("/logout", middleware.AuthMiddleware(jwtService), c.AuthHandler.Logout)
 			auth.POST("/password/forgot", c.AuthHandler.ForgotPassword)

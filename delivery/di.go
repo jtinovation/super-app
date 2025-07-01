@@ -19,17 +19,19 @@ type Container struct {
 	StudentHandler      *handler.StudentHandler
 	StudyProgramHandler *handler.StudyProgramHandler
 	SubjectHandler      *handler.SubjectHandler
+	GoogleAuthService   service.GoogleAuthService
 }
 
 func InitContainer(db *gorm.DB, jwtService service.JWTService) *Container {
 	emailService := service.NewEmailService(config.AppConfig.Email)
+	googleAuthService := service.NewGoogleAuthService(config.AppConfig)
 
 	authRepo := repository.NewAuthRepository(db)
 	userRepo := repository.NewUserRepository(db)
 	passwordResetRepo := repository.NewPasswordResetRepository(db)
 
 	authUC := usecase.NewAuthUseCase(authRepo, userRepo, passwordResetRepo, jwtService, emailService)
-	authHandler := handler.NewAuthHandler(authUC)
+	authHandler := handler.NewAuthHandler(authUC, googleAuthService)
 
 	employeeRepo := repository.NewEmployeeRepository(db)
 	employeeUC := usecase.NewEmployeeUseCase(db, employeeRepo, userRepo)
