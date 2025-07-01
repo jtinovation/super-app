@@ -25,6 +25,7 @@ type AuthUseCase interface {
 	ResendVerificationEmail(email string) error
 	ForgotPassword(req dto.ForgotPasswordRequestDTO) error
 	ResetPassword(req dto.ResetPasswordRequestDTO) error
+	Me(userID string) (*dto.UserLoginInfo, error)
 }
 
 type authUseCase struct {
@@ -85,11 +86,12 @@ func (uc *authUseCase) Login(req dto.LoginRequestDTO) (*dto.LoginResponseDTO, er
 	return &dto.LoginResponseDTO{
 		Token: token,
 		User: dto.UserLoginInfo{
-			ID:          user.ID,
-			Name:        user.Name,
-			Email:       user.Email,
-			Roles:       roleNames,
-			Permissions: permissionNames,
+			ID:               user.ID,
+			Name:             user.Name,
+			Email:            user.Email,
+			IsChangePassword: user.IsChangePassword,
+			Roles:            roleNames,
+			Permissions:      permissionNames,
 		},
 	}, nil
 }
@@ -123,11 +125,12 @@ func (uc *authUseCase) LoginWithGoogle(userInfo *service.GoogleUserInfo) (*dto.L
 	return &dto.LoginResponseDTO{
 		Token: token,
 		User: dto.UserLoginInfo{
-			ID:          user.ID,
-			Name:        user.Name,
-			Email:       user.Email,
-			Roles:       roleNames,
-			Permissions: permissionNames,
+			ID:               user.ID,
+			Name:             user.Name,
+			Email:            user.Email,
+			IsChangePassword: user.IsChangePassword,
+			Roles:            roleNames,
+			Permissions:      permissionNames,
 		},
 	}, nil
 }
@@ -285,4 +288,35 @@ func (uc *authUseCase) ResendVerificationEmail(email string) error {
 	fmt.Println("Verification Email Token:", token) // Untuk debugging
 
 	return nil
+}
+
+func (uc *authUseCase) Me(userID string) (*dto.UserLoginInfo, error) {
+	user, err := uc.userRepo.FindByID(userID)
+	if err != nil {
+		return nil, errors.New("user not found")
+	}
+
+	var roleNames []string
+	var permissionNames []string
+	permissionSet := make(map[string]struct{})
+
+	for _, role := range user.Roles {
+		roleNames = append(roleNames, role.Name)
+		for _, perm := range role.Permissions {
+			permissionSet[perm.Name] = struct{}{}
+		}
+	}
+
+	for perm := range permissionSet {
+		permissionNames = append(permissionNames, perm)
+	}
+
+	return &dto.UserLoginInfo{
+		ID:               user.ID,
+		Name:             user.Name,
+		Email:            user.Email,
+		IsChangePassword: user.IsChangePassword,
+		Roles:            roleNames,
+		Permissions:      permissionNames,
+	}, nil
 }

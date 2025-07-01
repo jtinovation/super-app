@@ -11,11 +11,12 @@ type LoginResponseDTO struct {
 }
 
 type UserLoginInfo struct {
-	ID          string   `json:"id"`
-	Name        string   `json:"name"`
-	Email       string   `json:"email"`
-	Roles       []string `json:"roles"`
-	Permissions []string `json:"permissions"`
+	ID               string   `json:"id"`
+	Name             string   `json:"name"`
+	Email            string   `json:"email"`
+	IsChangePassword bool     `json:"is_change_password"`
+	Roles            []string `json:"roles"`
+	Permissions      []string `json:"permissions"`
 }
 
 type ForgotPasswordRequestDTO struct {

@@ -12,14 +12,15 @@ func SetupRoutes(router *gin.Engine, c *Container, jwtService service.JWTService
 	{
 		auth := api.Group("/auth")
 		{
+			auth.GET("/email/verify/:token", c.AuthHandler.VerifyEmail)
+			auth.POST("/email/resend", middleware.AuthMiddleware(jwtService), c.AuthHandler.ResendVerificationEmail)
 			auth.GET("/google/login", c.AuthHandler.GoogleLogin)
 			auth.GET("/google/callback", c.AuthHandler.GoogleCallback)
 			auth.POST("/login", c.AuthHandler.Login)
 			auth.POST("/logout", middleware.AuthMiddleware(jwtService), c.AuthHandler.Logout)
+			auth.GET("/me", middleware.AuthMiddleware(jwtService), c.AuthHandler.Me)
 			auth.POST("/password/forgot", c.AuthHandler.ForgotPassword)
 			auth.POST("/password/reset", c.AuthHandler.ResetPassword)
-			auth.GET("/email/verify/:token", c.AuthHandler.VerifyEmail)
-			auth.POST("/email/resend", middleware.AuthMiddleware(jwtService), c.AuthHandler.ResendVerificationEmail)
 		}
 
 		employees := api.Group("/employees").Use(middleware.AuthMiddleware(jwtService))

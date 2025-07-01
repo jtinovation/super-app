@@ -177,3 +177,19 @@ func (h *AuthHandler) ResendVerificationEmail(c *gin.Context) {
 
 	helper.SuccessResponse(c, http.StatusOK, "Verification link has been sent to your email", nil)
 }
+
+func (h *AuthHandler) Me(c *gin.Context) {
+	userID, exists := c.Get("user_id")
+	if !exists {
+		helper.ErrorResponse(c, http.StatusInternalServerError, "Could not retrieve user ID from context", errors.New("user ID not found in context"))
+		return
+	}
+
+	userInfo, err := h.useCase.Me(userID.(string))
+	if err != nil {
+		helper.ErrorResponse(c, http.StatusInternalServerError, "Failed to retrieve user information", err)
+		return
+	}
+
+	helper.SuccessResponse(c, http.StatusOK, "User information retrieved successfully", userInfo)
+}

@@ -32,3 +32,11 @@ func (r *userRepository) Update(id string, user *domain.User) (*domain.User, err
 	}
 	return &existingUser, nil
 }
+
+func (r *userRepository) FindByID(id string) (*domain.User, error) {
+	var user domain.User
+	if err := r.db.Preload("Roles.Permissions").First(&user, "id = ?", id).Error; err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
