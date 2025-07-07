@@ -8,18 +8,20 @@ import (
 )
 
 type Student struct {
-	ID            string  `gorm:"type:char(36);primaryKey"`
-	UserID        string  `gorm:"column:m_user_id;type:char(36);not null"`
-	NIM           string  `gorm:"type:varchar(255);not null;unique"`
-	Generation    *int    `gorm:"type:int"`
-	TuitionFee    *int    `gorm:"type:int"`
-	TuitionMethod *string `gorm:"type:varchar(255)"`
-	CreatedAt     time.Time
-	UpdatedAt     time.Time
-	DeletedAt     gorm.DeletedAt `gorm:"index"`
+	ID               string  `gorm:"type:char(36);primaryKey"`
+	UserID           string  `gorm:"column:m_user_id;type:char(36);not null"`
+	StudentProgramID string  `gorm:"column:m_study_program_id;type:char(36);not null"`
+	NIM              string  `gorm:"type:varchar(255);not null;unique"`
+	Generation       *int    `gorm:"type:int"`
+	TuitionFee       *int    `gorm:"type:int"`
+	TuitionMethod    *string `gorm:"type:varchar(255)"`
+	CreatedAt        time.Time
+	UpdatedAt        time.Time
+	DeletedAt        gorm.DeletedAt `gorm:"index"`
 
-	User         User         `gorm:"foreignKey:UserID;references:ID"`
-	StudyProgram StudyProgram `gorm:"foreignKey:ID;references:StudyProgramID"`
+	User            User              `gorm:"foreignKey:UserID;references:ID"`
+	StudyProgram    StudyProgram      `gorm:"foreignKey:ID;references:StudyProgramID"`
+	StudentSemester []StudentSemester `gorm:"foreignKey:StudentID;references:ID"`
 
 	Name             string `gorm:"column:name;<-:false;->"`
 	ImgPath          string `gorm:"column:img_path;<-:false;->"`

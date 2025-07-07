@@ -50,7 +50,8 @@ func InitContainer(db *gorm.DB, jwtService service.JWTService) *Container {
 	sessionHandler := handler.NewSessionHandler(sessionUC)
 
 	studentRepo := repository.NewStudentRepository(db)
-	studentUC := usecase.NewStudentUseCase(db, studentRepo, userRepo)
+	studentSemesterRepo := repository.NewStudentSemesterRepository(db)
+	studentUC := usecase.NewStudentUseCase(db, studentRepo, userRepo, studentSemesterRepo)
 	studentHandler := handler.NewStudentHandler(studentUC)
 
 	studyProgramRepo := repository.NewStudyProgramRepository(db)

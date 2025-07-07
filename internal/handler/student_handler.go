@@ -60,11 +60,18 @@ func (h *StudentHandler) Create(c *gin.Context) {
 
 	file, err := c.FormFile("avatar")
 	if err == nil {
-		if !helper.ValidateUploadedFile(c, file, 2*1024*1024, map[string]bool{
-			"image/jpeg": true, "image/png": true, "image/gif": true, "image/svg+xml": true,
-		}) {
-			return // Validation failed
+		maxSize := int64(2 * 1024 * 1024) // 2MB
+		allowedMimeTypes := map[string]bool{
+			"image/jpeg":    true,
+			"image/png":     true,
+			"image/gif":     true,
+			"image/svg+xml": true,
 		}
+
+		if !helper.ValidateUploadedFile(c, file, maxSize, allowedMimeTypes) {
+			return
+		}
+
 		payload.Avatar = file
 	} else if err != http.ErrMissingFile {
 		helper.ErrorResponse(c, http.StatusBadRequest, "Invalid file upload", err)

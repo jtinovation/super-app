@@ -1,5 +1,3 @@
-// internal/usecase/student_usecase.go
-
 package usecase
 
 import (
@@ -7,6 +5,7 @@ import (
 	"jti-super-app-go/config"
 	"jti-super-app-go/internal/domain"
 	"jti-super-app-go/internal/dto"
+	"jti-super-app-go/pkg/constants"
 	"jti-super-app-go/pkg/helper"
 	"path/filepath"
 	"time"
@@ -22,16 +21,18 @@ type StudentUseCase interface {
 }
 
 type studentUseCase struct {
-	db          *gorm.DB
-	studentRepo domain.StudentRepository
-	userRepo    domain.UserRepository
+	db                  *gorm.DB
+	studentRepo         domain.StudentRepository
+	userRepo            domain.UserRepository
+	studentSemesterRepo domain.StudentSemesterRepository
 }
 
-func NewStudentUseCase(db *gorm.DB, studentRepo domain.StudentRepository, userRepo domain.UserRepository) StudentUseCase {
+func NewStudentUseCase(db *gorm.DB, studentRepo domain.StudentRepository, userRepo domain.UserRepository, studentSemesterRepo domain.StudentSemesterRepository) StudentUseCase {
 	return &studentUseCase{
-		db:          db,
-		studentRepo: studentRepo,
-		userRepo:    userRepo,
+		db:                  db,
+		studentRepo:         studentRepo,
+		userRepo:            userRepo,
+		studentSemesterRepo: studentSemesterRepo,
 	}
 }
 
@@ -40,17 +41,19 @@ func (u *studentUseCase) FindAll(params dto.QueryParams) (*[]domain.Student, int
 }
 
 func (u *studentUseCase) Create(payload *dto.StoreStudentDTO) (*domain.Student, error) {
+	var newStudent *domain.Student
+	imgPath := constants.STUDENT_PATH
+	imgName := constants.DEFAULT_AVATAR
+
 	tx := u.db.Begin()
 	if tx.Error != nil {
 		return nil, tx.Error
 	}
 
-	// Handle avatar upload
-	imgPath := "students"
-	imgName := "default.png"
 	if payload.Avatar != nil {
 		extension := filepath.Ext(payload.Avatar.Filename)
 		imgName = fmt.Sprintf("%s%s", uuid.NewString(), extension)
+
 		file, err := payload.Avatar.Open()
 		if err != nil {
 			tx.Rollback()
@@ -65,8 +68,6 @@ func (u *studentUseCase) Create(payload *dto.StoreStudentDTO) (*domain.Student, 
 		}
 	}
 
-	// Create User from NIM
-	email := fmt.Sprintf("%s@student.jti.polinema.ac.id", payload.NIM)
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(payload.NIM), bcrypt.DefaultCost)
 	if err != nil {
 		tx.Rollback()
@@ -80,17 +81,20 @@ func (u *studentUseCase) Create(payload *dto.StoreStudentDTO) (*domain.Student, 
 	}
 
 	newUser := &domain.User{
-		ID:         uuid.NewString(),
-		Name:       payload.Name,
-		Email:      email,
-		Password:   string(hashedPassword),
-		ImgPath:    &imgPath,
-		ImgName:    &imgName,
-		Status:     "ACTIVE",
-		Gender:     payload.Gender,
-		Religion:   payload.Religion,
-		BirthPlace: payload.BirthPlace,
-		BirthDate:  birthDate,
+		ID:          uuid.NewString(),
+		Name:        payload.Name,
+		Email:       payload.Email,
+		Password:    string(hashedPassword),
+		ImgPath:     &imgPath,
+		ImgName:     &imgName,
+		Status:      "ACTIVE",
+		Gender:      payload.Gender,
+		Religion:    payload.Religion,
+		BirthPlace:  payload.BirthPlace,
+		BirthDate:   birthDate,
+		PhoneNumber: payload.PhoneNumber,
+		Nationality: payload.Nationality,
+		Address:     payload.Address,
 	}
 	createdUser, err := u.userRepo.Create(newUser)
 	if err != nil {
@@ -99,19 +103,38 @@ func (u *studentUseCase) Create(payload *dto.StoreStudentDTO) (*domain.Student, 
 	}
 
 	// Create Student
-	newStudent := &domain.Student{
-		ID:            uuid.NewString(),
-		UserID:        createdUser.ID,
-		NIM:           payload.NIM,
-		Generation:    payload.Generation,
-		TuitionFee:    payload.TuitionFee,
-		TuitionMethod: payload.TuitionMethod,
+	student := &domain.Student{
+		ID:               uuid.NewString(),
+		UserID:           createdUser.ID,
+		StudentProgramID: payload.StudyProgramID,
+		NIM:              payload.NIM,
+		Generation:       payload.Generation,
+		TuitionFee:       payload.TuitionFee,
+		TuitionMethod:    payload.TuitionMethod,
+		StudyProgramID:   payload.StudyProgramID,
 	}
-	createdStudent, err := u.studentRepo.Create(newStudent)
+
+	newStudent, err = u.studentRepo.Create(student)
 	if err != nil {
 		tx.Rollback()
 		return nil, err
 	}
 
-	return createdStudent, tx.Commit().Error
+	err = u.studentSemesterRepo.StoreStudentSemester(&domain.StudentSemester{
+		ID:         uuid.NewString(),
+		StudentID:  newStudent.ID,
+		SemesterID: payload.SemesterId,
+		Class:      payload.Class,
+	})
+
+	if err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		return nil, err
+	}
+
+	return newStudent, nil
 }

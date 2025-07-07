@@ -72,13 +72,14 @@ func (r *studentRepository) FindAll(params dto.QueryParams) (*[]domain.Student, 
 
 	if params.Sort != "" {
 		var sortOrder string
-		if params.Sort == "major.name" {
+		switch params.Sort {
+		case "major.name":
 			sortOrder = fmt.Sprintf("m_major.name %s", params.Order)
-		} else if params.Sort == "study_program.name" {
+		case "study_program.name":
 			sortOrder = fmt.Sprintf("m_study_program.name %s", params.Order)
-		} else if params.Sort == "class.name" {
+		case "class.name":
 			sortOrder = fmt.Sprintf("m_class.name %s", params.Order)
-		} else {
+		default:
 			sortOrder = fmt.Sprintf("%s %s", params.Sort, params.Order)
 		}
 		query = query.Order(sortOrder)
