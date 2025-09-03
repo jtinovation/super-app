@@ -19,9 +19,10 @@ type Student struct {
 	UpdatedAt        time.Time
 	DeletedAt        gorm.DeletedAt `gorm:"index"`
 
-	User            User              `gorm:"foreignKey:UserID;references:ID"`
-	StudyProgram    StudyProgram      `gorm:"foreignKey:ID;references:StudyProgramID"`
-	StudentSemester []StudentSemester `gorm:"foreignKey:StudentID;references:ID"`
+	User             User              `gorm:"foreignKey:UserID;references:ID"`
+	StudyProgram     StudyProgram      `gorm:"foreignKey:StudentProgramID;references:ID"`
+	StudentSemesters []StudentSemester `gorm:"foreignKey:StudentID;references:ID"`
+	// Semesters       []Semester        `gorm:"many2many:m_student_semester;joinForeignKey:m_student_id;joinReferences:m_semester_id;References:ID;foreignKey:ID"`
 
 	Name             string `gorm:"column:name;<-:false;->"`
 	ImgPath          string `gorm:"column:img_path;<-:false;->"`

@@ -65,6 +65,7 @@ func SetupRoutes(router *gin.Engine, c *Container, jwtService service.JWTService
 		students := api.Group("/students").Use(middleware.AuthMiddleware(jwtService))
 		{
 			students.GET("", c.StudentHandler.FindAll)
+			students.GET("/:id", c.StudentHandler.FindByID)
 			students.POST("", c.StudentHandler.Create)
 		}
 

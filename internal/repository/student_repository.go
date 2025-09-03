@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"jti-super-app-go/internal/domain"
 	"jti-super-app-go/internal/dto"
+	"sort"
 	"strings"
 
 	"gorm.io/gorm"
@@ -99,9 +100,14 @@ func (r *studentRepository) FindAll(params dto.QueryParams) (*[]domain.Student, 
 
 func (r *studentRepository) FindByID(id string) (*domain.Student, error) {
 	var student domain.Student
-	if err := r.db.Preload("User").First(&student, "id = ?", id).Error; err != nil {
+	if err := r.db.Preload("User").Preload("StudyProgram").Preload("StudentSemesters.Semester.Session").First(&student, "id = ?", id).Error; err != nil {
 		return nil, err
 	}
+
+	sort.Slice(student.StudentSemesters, func(i, j int) bool {
+		return student.StudentSemesters[i].Semester.Semester < student.StudentSemesters[j].Semester.Semester
+	})
+
 	return &student, nil
 }
 
@@ -113,7 +119,20 @@ func (r *studentRepository) Create(student *domain.Student) (*domain.Student, er
 }
 
 func (r *studentRepository) Update(id string, student *domain.Student) (*domain.Student, error) {
-	panic("not implemented")
+	if err := r.db.Model(&domain.Student{}).Where("id = ?", id).Updates(student).Error; err != nil {
+		return nil, err
+	}
+
+	var updatedStudent domain.Student
+	if err := r.db.Preload("User").Preload("StudyProgram").Preload("StudentSemesters.Semester.Session").First(&updatedStudent, "id = ?", id).Error; err != nil {
+		return nil, err
+	}
+
+	sort.Slice(updatedStudent.StudentSemesters, func(i, j int) bool {
+		return updatedStudent.StudentSemesters[i].Semester.Semester < updatedStudent.StudentSemesters[j].Semester.Semester
+	})
+
+	return &updatedStudent, nil
 }
 
 func (r *studentRepository) Delete(id string) error {

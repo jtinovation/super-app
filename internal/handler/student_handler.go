@@ -90,3 +90,65 @@ func (h *StudentHandler) Create(c *gin.Context) {
 
 	helper.SuccessResponse(c, http.StatusCreated, "Student created successfully", student)
 }
+
+func (h *StudentHandler) FindByID(c *gin.Context) {
+	id := c.Param("id")
+	if id == "" {
+		helper.ErrorResponse(c, http.StatusBadRequest, "Student ID is required", nil)
+		return
+	}
+
+	student, err := h.useCase.FindByID(id)
+	if err != nil {
+		if strings.Contains(err.Error(), "record not found") {
+			helper.ErrorResponse(c, http.StatusNotFound, "Student not found", nil)
+			return
+		}
+		helper.ErrorResponse(c, http.StatusInternalServerError, "Failed to fetch student", err)
+		return
+	}
+
+	avatarURL := ""
+	if student.ImgPath != "" && student.ImgName != "" {
+		avatarURL = helper.GetUrlFile(student.ImgPath, student.ImgName)
+	}
+
+	semesters := []dto.StudentSemesterResource{}
+	for _, ss := range student.StudentSemesters {
+		semesters = append(semesters, dto.StudentSemesterResource{
+			ID:        ss.Semester.ID,
+			Year:      ss.Semester.Year,
+			Semester:  ss.Semester.Semester,
+			Class:     ss.Class,
+			SessionId: ss.Semester.SessionID,
+			Session:   ss.Semester.Session.Session,
+		})
+	}
+
+	resource := dto.StudentDetailResource{
+		ID:             student.ID,
+		NIM:            student.NIM,
+		Generation:     student.Generation,
+		TuitionFee:     student.TuitionFee,
+		TuitionMethod:  student.TuitionMethod,
+		StudyProgramId: student.StudyProgram.ID,
+		MajorId:        student.StudyProgram.MajorID,
+		User: dto.UserResource{
+			ID:          student.User.ID,
+			Name:        student.User.Name,
+			Email:       student.User.Email,
+			Status:      student.User.Status,
+			Gender:      student.User.Gender,
+			Religion:    student.User.Religion,
+			BirthDate:   student.User.BirthDate,
+			BirthPlace:  student.User.BirthPlace,
+			PhoneNumber: student.User.PhoneNumber,
+			Address:     student.User.Address,
+			Nationality: student.User.Nationality,
+			Avatar:      avatarURL,
+		},
+		Semesters: semesters,
+	}
+
+	helper.SuccessResponse(c, http.StatusOK, "Student fetched successfully", resource)
+}

@@ -17,7 +17,9 @@ import (
 
 type StudentUseCase interface {
 	FindAll(params dto.QueryParams) (*[]domain.Student, int64, error)
+	FindByID(id string) (*domain.Student, error)
 	Create(payload *dto.StoreStudentDTO) (*domain.Student, error)
+	Update(id string, payload *dto.UpdateStudentDTO) (*domain.Student, error)
 }
 
 type studentUseCase struct {
@@ -137,4 +139,92 @@ func (u *studentUseCase) Create(payload *dto.StoreStudentDTO) (*domain.Student, 
 	}
 
 	return newStudent, nil
+}
+
+func (u *studentUseCase) FindByID(id string) (*domain.Student, error) {
+	student, err := u.studentRepo.FindByID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	if student == nil {
+		return nil, fmt.Errorf("student with ID %s not found", id)
+	}
+
+	return student, nil
+}
+
+func (u *studentUseCase) Update(id string, payload *dto.UpdateStudentDTO) (*domain.Student, error) {
+	imgPath := constants.STUDENT_PATH
+	imgName := constants.DEFAULT_AVATAR
+
+	student, err := u.studentRepo.FindByID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	if student == nil {
+		return nil, fmt.Errorf("student with ID %s not found", id)
+	}
+
+	tx := u.db.Begin()
+
+	if payload.Avatar != nil {
+		extension := filepath.Ext(payload.Avatar.Filename)
+		imgName = fmt.Sprintf("%s%s", uuid.NewString(), extension)
+
+		file, err := payload.Avatar.Open()
+		if err != nil {
+			tx.Rollback()
+			return nil, err
+		}
+		defer file.Close()
+
+		err = helper.UploadFile(config.AppConfig.Minio.Bucket, fmt.Sprintf("%s/%s", imgPath, imgName), file, payload.Avatar.Size, payload.Avatar.Header.Get("Content-Type"))
+		if err != nil {
+			tx.Rollback()
+			return nil, err
+		}
+	}
+
+	var birthDate *time.Time
+	if payload.BirthDate != nil {
+		parsedTime, _ := time.Parse("2006-01-02", *payload.BirthDate)
+		birthDate = &parsedTime
+	}
+
+	// Update User
+	student.User.Name = payload.Name
+	student.User.Email = payload.Email
+	student.User.ImgPath = &imgPath
+	student.User.ImgName = &imgName
+	student.User.Status = *payload.Status
+	student.User.Gender = payload.Gender
+	student.User.Religion = payload.Religion
+	student.User.BirthPlace = payload.BirthPlace
+	student.User.BirthDate = birthDate
+	student.User.PhoneNumber = payload.PhoneNumber
+	student.User.Nationality = payload.Nationality
+	student.User.Address = payload.Address
+
+	updatedUser, err := u.userRepo.Update(student.User.ID, &student.User)
+	if err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+
+	// update Student
+	student.User = *updatedUser
+	student.NIM = payload.NIM
+	student.Generation = payload.Generation
+	student.TuitionFee = payload.TuitionFee
+	student.TuitionMethod = payload.TuitionMethod
+	student.StudyProgramID = payload.StudyProgramID
+	updatedStudent, err := u.studentRepo.Update(id, student)
+	if err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+
+	return updatedStudent, nil
 }
