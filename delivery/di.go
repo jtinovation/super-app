@@ -13,6 +13,7 @@ import (
 type Container struct {
 	AuthHandler         *handler.AuthHandler
 	EmployeeHandler     *handler.EmployeeHandler
+	LabHandler          *handler.LabHandler
 	MajorHandler        *handler.MajorHandler
 	SemesterHandler     *handler.SemesterHandler
 	SessionHandler      *handler.SessionHandler
@@ -36,6 +37,10 @@ func InitContainer(db *gorm.DB, jwtService service.JWTService) *Container {
 	employeeRepo := repository.NewEmployeeRepository(db)
 	employeeUC := usecase.NewEmployeeUseCase(db, employeeRepo, userRepo)
 	employeeHandler := handler.NewEmployeeHandler(employeeUC)
+
+	labRepo := repository.NewLabRepository(db)
+	labUC := usecase.NewLabUseCase(labRepo)
+	labHandler := handler.NewLabHandler(labUC)
 
 	majorRepo := repository.NewMajorRepository(db)
 	majorUC := usecase.NewMajorUseCase(majorRepo)
@@ -66,6 +71,7 @@ func InitContainer(db *gorm.DB, jwtService service.JWTService) *Container {
 	return &Container{
 		AuthHandler:         authHandler,
 		EmployeeHandler:     employeeHandler,
+		LabHandler:          labHandler,
 		MajorHandler:        majorHandler,
 		SemesterHandler:     semesterHandler,
 		SessionHandler:      sessionHandler,

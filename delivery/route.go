@@ -33,6 +33,16 @@ func SetupRoutes(router *gin.Engine, c *Container, jwtService service.JWTService
 			employees.DELETE("/:id", c.EmployeeHandler.Delete)
 		}
 
+		labs := api.Group("/labs").Use(middleware.AuthMiddleware(jwtService))
+		{
+			labs.GET("", c.LabHandler.FindAll)
+			labs.GET("/:id", c.LabHandler.FindByID)
+			labs.GET("/options", c.LabHandler.FindAllAsOptions)
+			labs.POST("", c.LabHandler.Create)
+			labs.PUT("/:id", c.LabHandler.Update)
+			labs.DELETE("/:id", c.LabHandler.Delete)
+		}
+
 		majors := api.Group("/majors").Use(middleware.AuthMiddleware(jwtService))
 		{
 			majors.GET("", c.MajorHandler.FindAll)

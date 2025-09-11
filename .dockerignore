@@ -1,0 +1,38 @@
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Vendor directory (if you use go mod vendor)
+vendor/
+
+# Dependency directories (remove the comment below if you use these)
+# Godeps/
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.coverprofile
+
+# IDE/editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Docker files
+docker-compose.override.yml
+.github
+.env.local
+.env.example
+.env.production
+.env.staging
