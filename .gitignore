@@ -22,7 +22,7 @@ go.work.sum
 # Go module files (optional, if you want to ignore them)
 # go.mod
 # go.sum
-*.sum
+# *.sum
 
 # IDE/editor files
 .vscode/
