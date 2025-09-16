@@ -21,6 +21,8 @@ type Container struct {
 	StudyProgramHandler *handler.StudyProgramHandler
 	SubjectHandler      *handler.SubjectHandler
 	GoogleAuthService   service.GoogleAuthService
+	OauthClientHandler  *handler.OauthClientHandler
+	OauthHandler        *handler.OauthHandler
 }
 
 func InitContainer(db *gorm.DB, jwtService service.JWTService) *Container {
@@ -68,6 +70,13 @@ func InitContainer(db *gorm.DB, jwtService service.JWTService) *Container {
 	subjectUC := usecase.NewSubjectUseCase(subjectRepo, subjectSemesterRepo)
 	subjectHandler := handler.NewSubjectHandler(subjectUC)
 
+	oauthClientRepo := repository.NewOauthClientRepository(db)
+	oauthClientUC := usecase.NewOauthClientUseCase(oauthClientRepo)
+	oauthClientHandler := handler.NewOauthClientHandler(oauthClientUC)
+
+	oauthUsecase := usecase.NewOauthUsecase()
+	oauthHandler := handler.NewOauthHandler(oauthClientUC, oauthUsecase, authUC)
+
 	return &Container{
 		AuthHandler:         authHandler,
 		EmployeeHandler:     employeeHandler,
@@ -78,5 +87,7 @@ func InitContainer(db *gorm.DB, jwtService service.JWTService) *Container {
 		StudentHandler:      studentHandler,
 		StudyProgramHandler: studyProgramHandler,
 		SubjectHandler:      subjectHandler,
+		OauthClientHandler:  oauthClientHandler,
+		OauthHandler:        oauthHandler,
 	}
 }

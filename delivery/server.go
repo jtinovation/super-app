@@ -21,6 +21,7 @@ func Server() *AppServer {
 	config.InitMinio()
 	db := config.DB
 	router := gin.Default()
+	router.LoadHTMLGlob("templates/**/*")
 	jwtService := service.NewJWTService()
 
 	container := InitContainer(db, jwtService)

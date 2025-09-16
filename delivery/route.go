@@ -99,5 +99,23 @@ func SetupRoutes(router *gin.Engine, c *Container, jwtService service.JWTService
 			subjects.GET("/lectures", c.SubjectHandler.GetLectureOnSubject)
 			subjects.POST("/lectures", c.SubjectHandler.StoreLectureOnSubject)
 		}
+
+		oauthClients := api.Group("/oauth-clients")
+		{
+			oauthClients.GET("", c.OauthClientHandler.FindAll)
+			oauthClients.GET("/:id", c.OauthClientHandler.FindByID)
+			oauthClients.POST("", c.OauthClientHandler.Create)
+			oauthClients.PUT("/:id", c.OauthClientHandler.Update)
+			oauthClients.DELETE("/:id", c.OauthClientHandler.Delete)
+		}
+
+		oauth := api.Group("/oauth")
+		{
+			oauth.Use(middleware.CSRFTokenMiddleware()).GET("/login", c.OauthHandler.LoginPage)
+			oauth.POST("/login", c.OauthHandler.LoginPost)
+			oauth.POST("/token", c.OauthHandler.Token)
+			oauth.GET("/authorize", c.OauthHandler.Authorize)
+			oauth.GET("/logout", c.OauthHandler.Logout)
+		}
 	}
 }

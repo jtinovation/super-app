@@ -26,6 +26,7 @@ type Config struct {
 	Email              EmailConfig
 	GoogleClientID     string
 	GoogleClientSecret string
+	CookieDomain       string
 }
 
 type MinioConfig struct {
@@ -69,6 +70,7 @@ func LoadConfig() {
 
 		JWTSecretKey:       getEnv("JWT_SECRET_KEY", "secret"),
 		JWTExpirationHours: getEnvAsInt("JWT_EXPIRATION_HOURS", 72),
+		CookieDomain:       getEnv("COOKIE_DOMAIN", "localhost"),
 
 		Minio: MinioConfig{
 			AccessKeyID:     getEnv("MINIO_ACCESS_KEY_ID", "minioadmin"),
