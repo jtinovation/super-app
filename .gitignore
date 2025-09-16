@@ -33,6 +33,7 @@ go.work.sum
 *.log
 log.txt
 *.env
+.env.staging
 
 # Database files (if using SQLite or similar)
 *.db
