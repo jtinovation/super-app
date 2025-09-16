@@ -73,4 +73,6 @@ jobs:
             cd /home/adm-sman1/superapp
             docker run -d --name super-app-staging -p 8000:8000 ghcr.io/${{ github.repository }}:staging
 
+            docker image prune -f
+
             echo "Deployment complete."
