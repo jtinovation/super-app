@@ -53,7 +53,7 @@ func (h *OauthHandler) Authorize(c *gin.Context) {
 		q := u.Query()
 		q.Set("return_to", c.Request.URL.RequestURI())
 		u.RawQuery = q.Encode()
-		c.Redirect(http.StatusFound, u.String())
+		c.Redirect(http.StatusSeeOther, u.String())
 		return
 	}
 
@@ -88,7 +88,7 @@ func (h *OauthHandler) Authorize(c *gin.Context) {
 	q := u.Query()
 	q.Set("code", data.Code)
 	u.RawQuery = q.Encode()
-	c.Redirect(http.StatusFound, u.String())
+	c.Redirect(http.StatusSeeOther, u.String())
 }
 
 func (h *OauthHandler) Token(c *gin.Context) {
@@ -161,7 +161,7 @@ func (h *OauthHandler) LoginPage(c *gin.Context) {
 	}
 
 	if _, err := c.Cookie(helper.CookieName); err == nil {
-		c.Redirect(http.StatusFound, returnTo)
+		c.Redirect(http.StatusSeeOther, returnTo)
 		return
 	}
 
@@ -199,12 +199,14 @@ func (h *OauthHandler) LoginPost(c *gin.Context) {
 	}
 
 	helper.SetSSO(c, user, config.AppConfig.JWTExpirationHours*3600) // simpan cookie SSO selama JWTExpirationHours
+	c.Header("Cache-Control", "no-store")
+	c.Header("Pragma", "no-cache")
 
-	c.Redirect(http.StatusFound, form.ReturnTo)
+	c.Redirect(http.StatusSeeOther, form.ReturnTo)
 }
 
 func (h *OauthHandler) Logout(c *gin.Context) {
 	helper.ClearSSO(c)
 	redirectTo := c.Query("redirect")
-	c.Redirect(http.StatusFound, redirectTo)
+	c.Redirect(http.StatusSeeOther, redirectTo)
 }
