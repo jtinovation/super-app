@@ -198,9 +198,9 @@ func (h *OauthHandler) LoginPost(c *gin.Context) {
 		return
 	}
 
-	helper.SetSSO(c, user, config.AppConfig.JWTExpirationHours*3600) // simpan cookie SSO selama JWTExpirationHours
 	c.Header("Cache-Control", "no-store")
 	c.Header("Pragma", "no-cache")
+	helper.SetSSO(c, user, config.AppConfig.JWTExpirationHours*3600) // simpan cookie SSO selama JWTExpirationHours
 
 	c.Redirect(http.StatusSeeOther, form.ReturnTo)
 }
