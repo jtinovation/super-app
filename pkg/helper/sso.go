@@ -15,7 +15,7 @@ func SetSSO(c *gin.Context, sub *dto.LoginResponseDTO, maxAgeSeconds int) {
 	b, _ := json.Marshal(sub)
 	val := base64.RawURLEncoding.EncodeToString(b)
 
-	c.SetSameSite(http.SameSiteNoneMode)
+	c.SetSameSite(http.SameSiteLaxMode)
 	c.SetCookie(
 		CookieName,
 		val,
@@ -41,6 +41,6 @@ func GetSSO(c *gin.Context) (string, bool) {
 }
 
 func ClearSSO(c *gin.Context) {
-	c.SetSameSite(http.SameSiteNoneMode)
+	c.SetSameSite(http.SameSiteLaxMode)
 	c.SetCookie(CookieName, "", -1, "/", "", true, true)
 }
