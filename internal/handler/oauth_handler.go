@@ -47,7 +47,7 @@ func (h *OauthHandler) Authorize(c *gin.Context) {
 		return
 	}
 
-	dataCookie, ok := helper.GetSSO(c) // baca cookie sso_session
+	userId, ok := helper.GetSSO(c) // baca cookie sso_session
 	if !ok {
 		u := url.URL{Path: "/api/v1/oauth/login"}
 		q := u.Query()
@@ -56,6 +56,18 @@ func (h *OauthHandler) Authorize(c *gin.Context) {
 		c.Redirect(http.StatusSeeOther, u.String())
 		return
 	}
+
+	dataCookie, err := config.Rdb.Get(c, "sso:"+userId).Result()
+	if err != nil {
+		// helper.ErrorResponse(c, http.StatusUnauthorized, "SSO session expired or invalid", err)
+		helper.ClearSSO(c)
+		helper.RedirectBackToLogin(c, "/api/v1/oauth/login", c.Request.URL.RequestURI(), "",
+			"SSO session expired or invalid")
+		return
+	}
+
+	// delete SSO session after reading
+	config.Rdb.Del(c, "sso:"+userId)
 
 	var user dto.LoginResponseDTO
 	err = json.Unmarshal([]byte(dataCookie), &user)
