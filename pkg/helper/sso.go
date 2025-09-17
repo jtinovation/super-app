@@ -3,7 +3,6 @@ package helper
 import (
 	"encoding/base64"
 	"encoding/json"
-	"jti-super-app-go/config"
 	"jti-super-app-go/internal/dto"
 	"net/http"
 
@@ -22,9 +21,10 @@ func SetSSO(c *gin.Context, sub *dto.LoginResponseDTO, maxAgeSeconds int) {
 		val,
 		maxAgeSeconds,
 		"/",
-		config.AppConfig.CookieDomain, // contoh: .example.com atau sso.example.com
-		true,                          // secure: wajib true di HTTPS
-		true,                          // httpOnly
+		// config.AppConfig.CookieDomain, // contoh: .example.com atau sso.example.com
+		"",
+		true, // secure: wajib true di HTTPS
+		true, // httpOnly
 	)
 }
 
@@ -42,5 +42,5 @@ func GetSSO(c *gin.Context) (string, bool) {
 
 func ClearSSO(c *gin.Context) {
 	c.SetSameSite(http.SameSiteNoneMode)
-	c.SetCookie(CookieName, "", -1, "/", config.AppConfig.CookieDomain, true, true)
+	c.SetCookie(CookieName, "", -1, "/", "", true, true)
 }
