@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"jti-super-app-go/config"
 	"jti-super-app-go/internal/dto"
 	"jti-super-app-go/internal/usecase"
@@ -35,6 +36,7 @@ func (h *OauthHandler) Authorize(c *gin.Context) {
 		helper.ClearSSO(c)
 		helper.RedirectBackToLogin(c, "/api/v1/oauth/login", c.Request.URL.RequestURI(), "",
 			"Invalid request parameters")
+		fmt.Println("Invalid request parameters")
 		return
 	}
 
@@ -44,6 +46,7 @@ func (h *OauthHandler) Authorize(c *gin.Context) {
 		helper.ClearSSO(c)
 		helper.RedirectBackToLogin(c, "/api/v1/oauth/login", c.Request.URL.RequestURI(), "",
 			"Invalid client or redirect URI")
+		fmt.Println("Invalid client or redirect URI")
 		return
 	}
 
@@ -64,6 +67,7 @@ func (h *OauthHandler) Authorize(c *gin.Context) {
 		helper.ClearSSO(c)
 		helper.RedirectBackToLogin(c, "/api/v1/oauth/login", c.Request.URL.RequestURI(), "",
 			"Failed to parse user data")
+		fmt.Println("Failed to parse user data")
 		return
 	}
 
@@ -73,6 +77,7 @@ func (h *OauthHandler) Authorize(c *gin.Context) {
 		helper.ClearSSO(c)
 		helper.RedirectBackToLogin(c, "/api/v1/oauth/login", c.Request.URL.RequestURI(), "",
 			"Failed to generate authorization code")
+		fmt.Println("Failed to generate authorization code")
 		return
 	}
 
@@ -82,6 +87,7 @@ func (h *OauthHandler) Authorize(c *gin.Context) {
 		helper.ClearSSO(c)
 		helper.RedirectBackToLogin(c, "/api/v1/oauth/login", c.Request.URL.RequestURI(), "",
 			"Invalid redirect URI")
+		fmt.Println("Invalid redirect URI")
 		return
 	}
 
