@@ -27,6 +27,7 @@ type Config struct {
 	GoogleClientID     string
 	GoogleClientSecret string
 	CookieDomain       string
+	SentryDSN          string
 }
 
 type MinioConfig struct {
@@ -91,6 +92,7 @@ func LoadConfig() {
 		},
 		GoogleClientID:     getEnv("GOOGLE_CLIENT_ID", ""),
 		GoogleClientSecret: getEnv("GOOGLE_CLIENT_SECRET", ""),
+		SentryDSN:          getEnv("SENTRY_DSN", ""),
 	}
 }
 

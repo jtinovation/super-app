@@ -7,6 +7,8 @@ import (
 	"jti-super-app-go/internal/service"
 	"log"
 
+	sentrygin "github.com/getsentry/sentry-go/gin"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -19,8 +21,13 @@ func Server() *AppServer {
 	config.ConnectDatabase()
 	config.ConnectRedis()
 	config.InitMinio()
+	config.InitSentry()
 	db := config.DB
+
 	router := gin.Default()
+	router.Use(sentrygin.New(sentrygin.Options{
+		Repanic: true,
+	}))
 	router.LoadHTMLGlob("templates/**/*")
 	jwtService := service.NewJWTService()
 
