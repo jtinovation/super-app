@@ -32,10 +32,9 @@ func SetSSO(c *gin.Context, sub *dto.LoginResponseDTO, maxAgeSeconds int) {
 		val,
 		maxAgeSeconds,
 		"/",
-		// config.AppConfig.CookieDomain, // contoh: .example.com atau sso.example.com
-		"",
-		true, // secure: wajib true di HTTPS
-		true, // httpOnly
+		config.AppConfig.CookieDomain, // contoh: .example.com atau sso.example.com
+		true,                          // secure: wajib true di HTTPS
+		true,                          // httpOnly
 	)
 }
 
@@ -53,5 +52,5 @@ func GetSSO(c *gin.Context) (string, bool) {
 
 func ClearSSO(c *gin.Context) {
 	c.SetSameSite(http.SameSiteLaxMode)
-	c.SetCookie(CookieName, "", -1, "/", "", true, true)
+	c.SetCookie(CookieName, "", -1, "/", config.AppConfig.CookieDomain, true, true)
 }
