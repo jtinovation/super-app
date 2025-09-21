@@ -17,7 +17,7 @@ func NewPermissionRepository(db *gorm.DB) *permissionRepository {
 
 func (r *permissionRepository) FindByID(id string) (*domain.Permission, error) {
 	var permission domain.Permission
-	if err := r.db.First(&permission, "id = ?", id).Error; err != nil {
+	if err := r.db.First(&permission, "uuid = ?", id).Error; err != nil {
 		return nil, err
 	}
 	return &permission, nil
@@ -31,7 +31,7 @@ func (r *permissionRepository) FindAll(params dto.QueryParams) (*[]domain.Permis
 
 	if params.Search != "" {
 		searchQuery := "%" + params.Search + "%"
-		query = query.Where("name LIKE ? OR description LIKE ?", searchQuery, searchQuery)
+		query = query.Where("name LIKE ? OR uuid LIKE ?", searchQuery, searchQuery)
 	}
 
 	if err := query.Count(&totalRows).Error; err != nil {
@@ -52,4 +52,26 @@ func (r *permissionRepository) FindAll(params dto.QueryParams) (*[]domain.Permis
 		return nil, 0, err
 	}
 	return &permissions, totalRows, nil
+}
+
+func (r *permissionRepository) Create(permission *domain.Permission) (*domain.Permission, error) {
+	if err := r.db.Create(permission).Error; err != nil {
+		return nil, err
+	}
+
+	return permission, nil
+}
+
+func (r *permissionRepository) Update(id string, permission *domain.Permission) (*domain.Permission, error) {
+	if err := r.db.Model(&domain.Permission{}).Where("uuid = ?", id).Updates(permission).Error; err != nil {
+		return nil, err
+	}
+	return permission, nil
+}
+
+func (r *permissionRepository) Delete(id string) error {
+	if err := r.db.Delete(&domain.Permission{}, "uuid = ?", id).Error; err != nil {
+		return err
+	}
+	return nil
 }

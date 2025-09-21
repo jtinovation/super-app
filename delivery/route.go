@@ -53,6 +53,15 @@ func SetupRoutes(router *gin.Engine, c *Container, jwtService service.JWTService
 			majors.DELETE("/:id", c.MajorHandler.Delete)
 		}
 
+		permissions := api.Group("/permissions").Use(middleware.AuthMiddleware(jwtService))
+		{
+			permissions.GET("", c.PermissionHandler.FindAll)
+			permissions.GET("/:id", c.PermissionHandler.FindByID)
+			permissions.POST("", c.PermissionHandler.Create)
+			permissions.PUT("/:id", c.PermissionHandler.Update)
+			permissions.DELETE("/:id", c.PermissionHandler.Delete)
+		}
+
 		roles := api.Group("/roles").Use(middleware.AuthMiddleware(jwtService))
 		{
 			roles.GET("", c.RoleHandler.FindAll)
