@@ -5,6 +5,7 @@ import (
 	"jti-super-app-go/internal/usecase"
 	"jti-super-app-go/pkg/helper"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -70,6 +71,11 @@ func (h *RoleHandler) Create(c *gin.Context) {
 
 	role, err := h.usecase.Create(&roleDTO)
 	if err != nil {
+		if strings.Contains(err.Error(), "Duplicate entry") {
+			helper.ErrorResponse(c, http.StatusBadRequest, "Role name already exists", err)
+			return
+		}
+
 		helper.ErrorResponse(c, http.StatusInternalServerError, "Failed to create role", err)
 		return
 	}
@@ -91,8 +97,16 @@ func (h *RoleHandler) Update(c *gin.Context) {
 
 	role, err := h.usecase.Update(id, &roleDTO)
 	if err != nil {
-		helper.ErrorResponse(c, http.StatusInternalServerError, "Failed to update role", err)
-		return
+		if err.Error() == "record not found" {
+			helper.ErrorResponse(c, http.StatusNotFound, "Role not found", err)
+			return
+		} else if strings.Contains(err.Error(), "Duplicate entry") {
+			helper.ErrorResponse(c, http.StatusBadRequest, "Role name already exists", err)
+			return
+		} else {
+			helper.ErrorResponse(c, http.StatusInternalServerError, "Failed to update role", err)
+			return
+		}
 	}
 
 	roleResource := dto.RoleResource{
@@ -105,6 +119,10 @@ func (h *RoleHandler) Update(c *gin.Context) {
 func (h *RoleHandler) Delete(c *gin.Context) {
 	id := c.Param("id")
 	if err := h.usecase.Delete(id); err != nil {
+		if err.Error() == "record not found" {
+			helper.ErrorResponse(c, http.StatusNotFound, "Role not found", err)
+			return
+		}
 		helper.ErrorResponse(c, http.StatusInternalServerError, "Failed to delete role", err)
 		return
 	}
