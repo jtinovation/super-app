@@ -27,7 +27,7 @@ func (r *roleRepository) FindAll(params dto.QueryParams) (*[]domain.Role, int64,
 	var roles []domain.Role
 	var totalRows int64
 
-	query := r.db.Model(&domain.Role{})
+	query := r.db.Model(&domain.Role{}).Preload("Permissions")
 
 	if params.Search != "" {
 		searchQuery := "%" + params.Search + "%"
@@ -63,9 +63,36 @@ func (r *roleRepository) Create(role *domain.Role) (*domain.Role, error) {
 }
 
 func (r *roleRepository) Update(id string, role *domain.Role) (*domain.Role, error) {
-	if err := r.db.Model(&domain.Role{}).Where("uuid = ?", id).Updates(role).Error; err != nil {
+	// Start a transaction to ensure atomicity
+	tx := r.db.Begin()
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+
+	// Update the role fields
+	if err := tx.Model(&domain.Role{}).Where("uuid = ?", id).Updates(role).Error; err != nil {
+		tx.Rollback()
 		return nil, err
 	}
+
+	// Update the permissions association if Permissions is not nil
+	if role.Permissions != nil {
+		var updatedRole domain.Role
+		if err := tx.Where("uuid = ?", id).First(&updatedRole).Error; err != nil {
+			tx.Rollback()
+			return nil, err
+		}
+		if err := tx.Model(&updatedRole).Association("Permissions").Replace(role.Permissions); err != nil {
+			tx.Rollback()
+			return nil, err
+		}
+	}
+
+	// Commit the transaction
+	if err := tx.Commit().Error; err != nil {
+		return nil, err
+	}
+
 	return role, nil
 }
 

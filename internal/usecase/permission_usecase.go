@@ -10,6 +10,7 @@ import (
 type PermissionUseCase interface {
 	FindByID(id string) (*domain.Permission, error)
 	FindAll(params dto.QueryParams) (*[]domain.Permission, int64, error)
+	FindAllAsOptions() (*[]domain.Permission, error)
 	Create(dto *dto.StorePermissionDTO) (*domain.Permission, error)
 	Update(id string, permission *dto.UpdatePermissionDTO) (*domain.Permission, error)
 	Delete(id string) error
@@ -29,6 +30,10 @@ func (u *permissionUseCase) FindByID(id string) (*domain.Permission, error) {
 
 func (u *permissionUseCase) FindAll(params dto.QueryParams) (*[]domain.Permission, int64, error) {
 	return u.repo.FindAll(params)
+}
+
+func (u *permissionUseCase) FindAllAsOptions() (*[]domain.Permission, error) {
+	return u.repo.FindAllAsOptions()
 }
 
 func (u *permissionUseCase) Create(dto *dto.StorePermissionDTO) (*domain.Permission, error) {

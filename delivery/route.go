@@ -56,6 +56,7 @@ func SetupRoutes(router *gin.Engine, c *Container, jwtService service.JWTService
 		permissions := api.Group("/permissions").Use(middleware.AuthMiddleware(jwtService))
 		{
 			permissions.GET("", c.PermissionHandler.FindAll)
+			permissions.GET("/options", c.PermissionHandler.FindAllAsOptions)
 			permissions.GET("/:id", c.PermissionHandler.FindByID)
 			permissions.POST("", c.PermissionHandler.Create)
 			permissions.PUT("/:id", c.PermissionHandler.Update)

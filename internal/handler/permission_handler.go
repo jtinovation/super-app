@@ -62,6 +62,24 @@ func (h *PermissionHandler) FindAll(c *gin.Context) {
 	helper.PaginatedSuccessResponse(c, http.StatusOK, "Permissions fetched successfully", permissionResources, meta)
 }
 
+func (h *PermissionHandler) FindAllAsOptions(c *gin.Context) {
+	permissions, err := h.usecase.FindAllAsOptions()
+	if err != nil {
+		helper.ErrorResponse(c, http.StatusInternalServerError, "Failed to fetch permissions", err)
+		return
+	}
+
+	permissionResources := []dto.Option{}
+	for _, permission := range *permissions {
+		permissionResources = append(permissionResources, dto.Option{
+			Label: permission.Name,
+			Value: permission.ID,
+		})
+	}
+
+	helper.SuccessResponse(c, http.StatusOK, "Permissions fetched successfully", permissionResources)
+}
+
 func (h *PermissionHandler) Create(c *gin.Context) {
 	var input dto.StorePermissionDTO
 	if err := c.ShouldBindJSON(&input); err != nil {

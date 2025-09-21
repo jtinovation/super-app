@@ -32,18 +32,28 @@ func (u *roleUseCase) FindAll(params dto.QueryParams) (*[]domain.Role, int64, er
 }
 
 func (u *roleUseCase) Create(dto *dto.StoreRoleDTO) (*domain.Role, error) {
+	permissions := []domain.Permission{}
+	for _, permID := range dto.Permissions {
+		permissions = append(permissions, domain.Permission{ID: permID})
+	}
 	role := &domain.Role{
-		ID:        uuid.NewString(),
-		Name:      dto.Name,
-		GuardName: "web",
+		ID:          uuid.NewString(),
+		Name:        dto.Name,
+		GuardName:   "web",
+		Permissions: permissions,
 	}
 
 	return u.repo.Create(role)
 }
 
 func (u *roleUseCase) Update(id string, role *dto.UpdateRoleDTO) (*domain.Role, error) {
+	permissions := []domain.Permission{}
+	for _, permID := range role.Permissions {
+		permissions = append(permissions, domain.Permission{ID: permID})
+	}
 	updatedRole := &domain.Role{
-		Name: role.Name,
+		Name:        role.Name,
+		Permissions: permissions,
 	}
 	return u.repo.Update(id, updatedRole)
 }

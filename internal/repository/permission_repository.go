@@ -54,6 +54,14 @@ func (r *permissionRepository) FindAll(params dto.QueryParams) (*[]domain.Permis
 	return &permissions, totalRows, nil
 }
 
+func (r *permissionRepository) FindAllAsOptions() (*[]domain.Permission, error) {
+	var permissions []domain.Permission
+	if err := r.db.Select("uuid", "name").Order("name asc").Find(&permissions).Error; err != nil {
+		return nil, err
+	}
+	return &permissions, nil
+}
+
 func (r *permissionRepository) Create(permission *domain.Permission) (*domain.Permission, error) {
 	if err := r.db.Create(permission).Error; err != nil {
 		return nil, err

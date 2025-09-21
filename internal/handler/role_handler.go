@@ -47,9 +47,18 @@ func (h *RoleHandler) FindAll(c *gin.Context) {
 
 	roleResources := []dto.RoleResource{}
 	for _, role := range *roles {
+		permissions := &[]dto.PermissionResource{}
+		for _, perm := range role.Permissions {
+			*permissions = append(*permissions, dto.PermissionResource{
+				ID:   perm.ID,
+				Name: perm.Name,
+			})
+		}
+
 		roleResources = append(roleResources, dto.RoleResource{
-			ID:   role.ID,
-			Name: role.Name,
+			ID:          role.ID,
+			Name:        role.Name,
+			Permissions: permissions,
 		})
 	}
 

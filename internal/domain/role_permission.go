@@ -13,6 +13,7 @@ type RoleRepository interface {
 type PermissionRepository interface {
 	FindByID(id string) (*Permission, error)
 	FindAll(params dto.QueryParams) (*[]Permission, int64, error)
+	FindAllAsOptions() (*[]Permission, error)
 	Create(permission *Permission) (*Permission, error)
 	Update(id string, permission *Permission) (*Permission, error)
 	Delete(id string) error
