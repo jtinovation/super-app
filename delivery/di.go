@@ -23,6 +23,8 @@ type Container struct {
 	GoogleAuthService   service.GoogleAuthService
 	OauthClientHandler  *handler.OauthClientHandler
 	OauthHandler        *handler.OauthHandler
+	PermissionHandler   *handler.PermissionHandler
+	RoleHandler         *handler.RoleHandler
 }
 
 func InitContainer(db *gorm.DB, jwtService service.JWTService) *Container {
@@ -47,6 +49,14 @@ func InitContainer(db *gorm.DB, jwtService service.JWTService) *Container {
 	majorRepo := repository.NewMajorRepository(db)
 	majorUC := usecase.NewMajorUseCase(majorRepo)
 	majorHandler := handler.NewMajorHandler(majorUC)
+
+	permissionRepo := repository.NewPermissionRepository(db)
+	permissionUC := usecase.NewPermissionUseCase(permissionRepo)
+	permissionHandler := handler.NewPermissionHandler(permissionUC)
+
+	roleRepo := repository.NewRoleRepository(db)
+	roleUC := usecase.NewRoleUseCase(roleRepo)
+	roleHandler := handler.NewRoleHandler(roleUC)
 
 	semesterRepo := repository.NewSemesterRepository(db)
 	semesterUC := usecase.NewSemesterUseCase(semesterRepo)
@@ -89,5 +99,7 @@ func InitContainer(db *gorm.DB, jwtService service.JWTService) *Container {
 		SubjectHandler:      subjectHandler,
 		OauthClientHandler:  oauthClientHandler,
 		OauthHandler:        oauthHandler,
+		PermissionHandler:   permissionHandler,
+		RoleHandler:         roleHandler,
 	}
 }
