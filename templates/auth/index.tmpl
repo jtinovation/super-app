@@ -1,0 +1,362 @@
+{{ define "auth/index.tmpl" }}
+<!doctype html>
+<html lang="id" data-bs-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{{ if .Title }}{{ .Title }} — {{ end }}Layanan JTI</title>
+    <meta name="description" content="Pusat layanan terintegrasi Jurusan Teknologi Informasi, Politeknik Negeri Jember." />
+    <link rel="icon" href="/static/favicon.ico" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+    <style>
+      :root { --brand:#6c63ff; --cyan:#22d3ee; --indigo:#6366f1; }
+
+      /* Layout & background (match login) */
+      body { min-height:100vh; overflow-x:hidden; }
+      .viewport { min-height: 100svh; display:flex; align-items:center; position:relative; isolation:isolate; }
+      .bg-abstract {
+        position:absolute; inset:0; z-index:-1; overflow:hidden;
+        background:
+          radial-gradient(1200px 600px at 0% -10%, rgba(108,99,255,.08), transparent 60%),
+          radial-gradient(1000px 500px at 110% 110%, rgba(34,211,238,.10), transparent 60%),
+          linear-gradient(180deg,#f8fafc,#f3f4f6);
+      }
+      .blob { position:absolute; filter:blur(30px); opacity:.6; will-change:transform; transition:transform .2s linear; }
+      .blob-1{ width:420px;height:420px;left:-80px;top:-60px; background:radial-gradient(circle at 30% 30%, rgba(99,102,241,.75), rgba(99,102,241,0) 60%); animation:float 18s ease-in-out infinite, drift 40s linear infinite; }
+      .blob-2{ width:520px;height:520px;right:-120px;bottom:-80px; background:radial-gradient(circle at 70% 70%, rgba(34,211,238,.7), rgba(34,211,238,0) 60%); animation:float 22s ease-in-out infinite reverse, drift 55s linear infinite reverse; }
+      .blob-3{ width:360px;height:360px;right:20%;top:10%; background:radial-gradient(circle at 50% 50%, rgba(108,99,255,.55), rgba(108,99,255,0) 60%); animation:float 26s ease-in-out infinite, rotate 60s linear infinite; }
+      .grid{ position:absolute; inset:0; opacity:.35; pointer-events:none;
+        background-image: linear-gradient(to right, rgba(15,23,42,.06) 1px, transparent 1px),
+                          linear-gradient(to bottom, rgba(15,23,42,.06) 1px, transparent 1px);
+        background-size:48px 48px; mask-image: radial-gradient(70% 70% at 50% 50%, black, transparent 80%);
+      }
+      @keyframes float{0%{transform:translate3d(0,0,0)}50%{transform:translate3d(0,-20px,0)}100%{transform:translate3d(0,0,0)}}
+      @keyframes drift{0%{transform:translateX(0)}100%{transform:translateX(60px)}}
+      @keyframes rotate{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
+      @media (prefers-reduced-motion: reduce){ .blob{ animation:none; } }
+
+      /* Header fixed di atas */
+      .site-header{
+        position: fixed;
+        top: 12px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: min(1200px, calc(100% - 32px));
+        z-index: 1050;
+        backdrop-filter: blur(6px);
+        background: rgba(255,255,255,.85);
+        border: 1px solid rgba(15,23,42,.06);
+        box-shadow: 0 10px 30px rgba(2,8,23,.04);
+        border-radius: 14px;
+      }
+      main.container{ padding-top: 96px;}
+      @media (max-width: 576px){ 
+      main.container{ padding-top: 84px; } 
+      .site-header{
+    top: 8px;
+    width: calc(100% - 16px);
+    padding: .35rem .6rem;
+  }
+  .brand-logo{ height: 32px; }
+  .site-header .badge{ display: none; } /* sembunyikan badge panjang di XS */
+      }
+
+      .brand-logo { height: 42px; object-fit: contain; }
+
+      /* Cards & search */
+      .service-card {
+        position: relative;
+        background: rgba(255,255,255,.96);
+        border: 1px solid rgba(15,23,42,.08);
+        border-radius: 16px;
+        padding: 16px;
+        height: 100%;
+        transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+        text-decoration: none !important;
+        color: inherit;
+        box-shadow: 0 8px 22px rgba(2,8,23,.04);
+      }
+      .service-card:hover, .service-card:focus-visible {
+        transform: translateY(-2px);
+        border-color: rgba(108,99,255,.35);
+        box-shadow: 0 16px 36px rgba(2,8,23,.08);
+        outline: none;
+      }
+      .svc-icon {
+        width: 42px; height: 42px;
+        display:inline-flex; align-items:center; justify-content:center;
+        border-radius:12px; background:#eef2ff;
+      }
+      .svc-title { font-weight: 700; margin: 0; }
+      .svc-desc { color:#6b7280; margin: 6px 0 0; font-size: .925rem; }
+      .svc-tags .badge { background:#f1f5f9; border:1px solid #e2e8f0; color:#334155; }
+      .lock-badge {
+        position:absolute; top:12px; right:12px;
+        background: rgba(108,99,255,.14); color:#4338ca;
+        border:1px solid rgba(108,99,255,.25);
+      }
+      .searchbar .form-control { border-radius: 14px; padding: .7rem .9rem; }
+      @media (max-width: 991.98px){ .viewport{ align-items:flex-start; } }
+    </style>
+  </head>
+
+  <body>
+    <!-- Header -->
+    <div class="site-header d-flex align-items-center justify-content-between px-3 px-md-4 py-2">
+      <div class="d-flex align-items-center gap-3">
+        {{ if .LogoURL }}
+          <img src="{{ .LogoURL }}" alt="Logo JTI" class="brand-logo">
+        {{ else }}
+          <strong class="fs-5">Layanan JTI</strong>
+        {{ end }}
+        <span class="badge rounded-pill text-bg-light border">Jurusan Teknologi Informasi — POLIJE</span>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <a href="/login" class="btn btn-outline-primary">Masuk</a>
+      </div>
+    </div>
+
+    <div class="viewport">
+      <!-- Animated BG layers -->
+      <div class="bg-abstract">
+        <span class="blob blob-1"></span>
+        <span class="blob blob-2"></span>
+        <span class="blob blob-3"></span>
+        <div class="grid"></div>
+      </div>
+
+      <main class="container py-5 py-md-5 w-100">
+        <!-- Hero -->
+        <section class="mb-4 mb-md-5 pt-5">
+          <div class="row g-3 align-items-center">
+            <div class="col-12 col-lg-7">
+              <h1 class="h3 fw-bold mb-2">Pilih Layanan JTI</h1>
+              <p class="text-muted mb-3">
+                Klik salah satu layanan untuk langsung menuju aplikasinya.
+                Beberapa layanan membutuhkan autentikasi SSO Google POLIJE.
+              </p>
+            </div>
+            <div class="col-12 col-lg-5">
+              <form class="searchbar" role="search" onsubmit="return false;">
+                <input id="svcSearch" type="search" class="form-control"
+                       placeholder="Cari layanan (mis. Slearn, JTISurat, SilabJTI, Quisioner...)"
+                       autocomplete="off" aria-label="Cari layanan">
+              </form>
+            </div>
+          </div>
+        </section>
+
+        <!-- Services (HARDCODE) -->
+        <section>
+          <div id="servicesGrid" class="row g-3 g-sm-4">
+            <!-- Slearn -->
+            <div class="col-12 col-sm-6 col-lg-4" data-name="Slearn" data-tags="lms belajar kuliah akademik e-learning">
+              <a class="service-card h-100 d-block" href="/apps/slearn">
+                <span class="badge lock-badge">🔒 SSO</span>
+                <div class="d-flex align-items-start gap-3">
+                  <span class="svc-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24"><path fill="#6366f1" d="M6 2h9a3 3 0 0 1 3 3v15l-3-2H7a3 3 0 0 1-3-3V5a3 3 0 0 1 2-3Z"/></svg>
+                  </span>
+                  <div>
+                    <h3 class="svc-title">Slearn</h3>
+                    <p class="svc-desc">Learning Management System kampus.</p>
+                    <div class="svc-tags mt-2 d-flex flex-wrap gap-1">
+                      <span class="badge rounded-pill">Akademik</span><span class="badge rounded-pill">Kuliah</span>
+                    </div>
+                  </div>
+                </div>
+              </a>
+            </div>
+            <!-- JTISurat -->
+            <div class="col-12 col-sm-6 col-lg-4" data-name="JTISurat" data-tags="surat administrasi disposisi persuratan">
+              <a class="service-card h-100 d-block" href="/apps/jtisurat">
+                <span class="badge lock-badge">🔒 SSO</span>
+                <div class="d-flex align-items-start gap-3">
+                  <span class="svc-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24"><path fill="#6366f1" d="M20 4H4a2 2 0 0 0-2 2v.4l10 6.25L22 6.4V6a2 2 0 0 0-2-2Zm0 5.2L12 15L4 9.2V18a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9.2Z"/></svg>
+                  </span>
+                  <div>
+                    <h3 class="svc-title">JTISurat</h3>
+                    <p class="svc-desc">Pengelolaan surat, tembusan & disposisi.</p>
+                    <div class="svc-tags mt-2 d-flex flex-wrap gap-1">
+                      <span class="badge rounded-pill">Administrasi</span>
+                    </div>
+                  </div>
+                </div>
+              </a>
+            </div>
+            <!-- SilabJTI -->
+            <div class="col-12 col-sm-6 col-lg-4" data-name="SilabJTI" data-tags="laboratorium inventory peminjaman alat lab">
+              <a class="service-card h-100 d-block" href="/apps/silabjti">
+                <span class="badge lock-badge">🔒 SSO</span>
+                <div class="d-flex align-items-start gap-3">
+                  <span class="svc-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24"><path fill="#6366f1" d="M15 2v5.6l4.8 8a4 4 0 0 1-3.5 6.4H7.7A4 4 0 0 1 4.2 15.6L9 7.6V2h6Z"/></svg>
+                  </span>
+                  <div>
+                    <h3 class="svc-title">SilabJTI</h3>
+                    <p class="svc-desc">Inventori & peminjaman peralatan lab.</p>
+                    <div class="svc-tags mt-2 d-flex flex-wrap gap-1">
+                      <span class="badge rounded-pill">Laboratorium</span>
+                    </div>
+                  </div>
+                </div>
+              </a>
+            </div>
+            <!-- Quisioner Evaluasi Dosen (JTIForm) -->
+            <div class="col-12 col-sm-6 col-lg-4" data-name="Quisioner Evaluasi Dosen" data-tags="quisioner evaluasi dosen penilaian jti form kuesioner">
+              <a class="service-card h-100 d-block" href="/apps/jtiform">
+                <span class="badge lock-badge">🔒 SSO</span>
+                <div class="d-flex align-items-start gap-3">
+                  <span class="svc-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24"><path fill="#6366f1" d="M5 2h14a2 2 0 0 1 2 2v14l-4-4H5a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Zm2 5h10v2H7V7Zm0 4h7v2H7v-2Z"/></svg>
+                  </span>
+                  <div>
+                    <h3 class="svc-title">Quisioner Evaluasi Dosen</h3>
+                    <p class="svc-desc">Penilaian dosen oleh mahasiswa per semester.</p>
+                    <div class="svc-tags mt-2 d-flex flex-wrap gap-1">
+                      <span class="badge rounded-pill">Akademik</span>
+                    </div>
+                  </div>
+                </div>
+              </a>
+            </div>
+            <!-- Bimbingan -->
+            <div class="col-12 col-sm-6 col-lg-4" data-name="Bimbingan" data-tags="bimbingan akademik dosen wali konsultasi">
+              <a class="service-card h-100 d-block" href="/apps/bimbingan">
+                <span class="badge lock-badge">🔒 SSO</span>
+                <div class="d-flex align-items-start gap-3">
+                  <span class="svc-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24"><path fill="#6366f1" d="M12 2a6 6 0 0 1 6 6v2h2v10H4V10h2V8a6 6 0 0 1 6-6Z"/></svg>
+                  </span>
+                  <div>
+                    <h3 class="svc-title">Bimbingan</h3>
+                    <p class="svc-desc">Bimbingan akademik & konsultasi mahasiswa.</p>
+                    <div class="svc-tags mt-2 d-flex flex-wrap gap-1">
+                      <span class="badge rounded-pill">Akademik</span>
+                    </div>
+                  </div>
+                </div>
+              </a>
+            </div>
+            <!-- Jadwal & Plotting -->
+            <div class="col-12 col-sm-6 col-lg-4" data-name="Jadwal Kuliah" data-tags="jadwal plotting kelas ruangan penjadwalan">
+              <a class="service-card h-100 d-block" href="/apps/jadwal">
+                <span class="badge lock-badge">🔒 SSO</span>
+                <div class="d-flex align-items-start gap-3">
+                  <span class="svc-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24"><path fill="#6366f1" d="M7 2h10v3H7V2ZM4 7h16v13H4V7Zm3 3v3h3v-3H7Z"/></svg>
+                  </span>
+                  <div>
+                    <h3 class="svc-title">Jadwal Kuliah</h3>
+                    <p class="svc-desc">Penjadwalan kelas, dosen, dan ruangan.</p>
+                    <div class="svc-tags mt-2 d-flex flex-wrap gap-1">
+                      <span class="badge rounded-pill">Akademik</span>
+                    </div>
+                  </div>
+                </div>
+              </a>
+            </div>
+            <!-- Dikantin -->
+            <div class="col-12 col-sm-6 col-lg-4" data-name="Dikantin" data-tags="kantin transaksi qris makanan kasir">
+              <a class="service-card h-100 d-block" href="/apps/dikantin">
+                <span class="badge lock-badge">🔒 SSO</span>
+                <div class="d-flex align-items-start gap-3">
+                  <span class="svc-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24"><path fill="#6366f1" d="M3 7h18l-2 12H5L3 7Zm3-4h12v2H6V3Z"/></svg>
+                  </span>
+                  <div>
+                    <h3 class="svc-title">Dikantin</h3>
+                    <p class="svc-desc">Ekosistem kantin & pembayaran terintegrasi.</p>
+                    <div class="svc-tags mt-2 d-flex flex-wrap gap-1">
+                      <span class="badge rounded-pill">Keuangan</span>
+                    </div>
+                  </div>
+                </div>
+              </a>
+            </div>
+            <!-- Arsip Dokumen -->
+            <div class="col-12 col-sm-6 col-lg-4" data-name="Arsip Dokumen" data-tags="arsip dokumen file repository">
+              <a class="service-card h-100 d-block" href="/apps/arsip">
+                <span class="badge lock-badge">🔒 SSO</span>
+                <div class="d-flex align-items-start gap-3">
+                  <span class="svc-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24"><path fill="#6366f1" d="M14 2H6a2 2 0 0 0-2 2v16l4-3h8a2 2 0 0 0 2-2V8l-4-6Z"/></svg>
+                  </span>
+                  <div>
+                    <h3 class="svc-title">Arsip Dokumen</h3>
+                    <p class="svc-desc">Penyimpanan & berbagi file internal.</p>
+                    <div class="svc-tags mt-2 d-flex flex-wrap gap-1">
+                      <span class="badge rounded-pill">Administrasi</span>
+                    </div>
+                  </div>
+                </div>
+              </a>
+            </div>
+            <!-- Helpdesk TI -->
+            <div class="col-12 col-sm-6 col-lg-4" data-name="Helpdesk TI" data-tags="helpdesk tiket support keluhan it">
+              <a class="service-card h-100 d-block" href="/apps/helpdesk">
+                <span class="badge lock-badge">🔒 SSO</span>
+                <div class="d-flex align-items-start gap-3">
+                  <span class="svc-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24"><path fill="#6366f1" d="M12 2a10 10 0 1 0 .001 20.001A10 10 0 0 0 12 2Zm-1 5h2v6h-2V7Zm0 8h2v2h-2v-2Z"/></svg>
+                  </span>
+                  <div>
+                    <h3 class="svc-title">Helpdesk TI</h3>
+                    <p class="svc-desc">Pelaporan tiket & dukungan teknis.</p>
+                    <div class="svc-tags mt-2 d-flex flex-wrap gap-1">
+                      <span class="badge rounded-pill">Support</span>
+                    </div>
+                  </div>
+                </div>
+              </a>
+            </div>
+            <!-- JTI Super App -->
+            <div class="col-12 col-sm-6 col-lg-4" data-name="JTI Super App" data-tags="sso api master data mahasiswa dosen prodi jurusan">
+              <a class="service-card h-100 d-block" href="/apps/superapp">
+                <span class="badge lock-badge">🔒 SSO</span>
+                <div class="d-flex align-items-start gap-3">
+                  <span class="svc-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24"><path fill="#6366f1" d="M12 8a4 4 0 1 1 0 8a4 4 0 0 1 0-8Zm9 3.5v1l-2.2.7a7.7 7.7 0 0 1-.6 1.3l1.3 1.9l-.7.7l-2-1.2c-.4.3-.9.5-1.3.7L15.5 21h-1l-.7-2.2c-.5 0-1 .1-1.5 0L10.5 21h-1l-.7-2.1c-.5-.2-1-.4-1.4-.7l-2 1.2l-.7-.7l1.3-1.9c-.2-.4-.4-.9-.6-1.3L3 12.5v-1l2.2-.7c.1-.5.3-.9.6-1.3L4.5 7.6l.7-.7l1.9 1.3c.4-.3.9-.5 1.3-.6L9.5 5h1l.7 2.2c.5 0 1-.1 1.5 0L13.5 5h1l.7 2.1c.5.2 1 .4 1.4.7l1.9-1.2l.7.7l-1.3 1.9c.2.4.4.9.6 1.3L21 11.5Z"/></svg>
+                  </span>
+                  <div>
+                    <h3 class="svc-title">JTI Super App</h3>
+                    <p class="svc-desc">Portal master data & integrasi layanan.</p>
+                    <div class="svc-tags mt-2 d-flex flex-wrap gap-1">
+                      <span class="badge rounded-pill">Integrasi</span>
+                    </div>
+                  </div>
+                </div>
+              </a>
+            </div>
+          </div>
+        </section>
+
+        <p class="text-center small text-muted mt-4 mb-0">
+          Terintegrasi SSO Google POLIJE • Kontak admin: <a href="mailto:ti@polije.ac.id">ti@polije.ac.id</a>
+        </p>
+      </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      // Filter pencarian: cocokkan nama & tags (data-attribute)
+      (function(){
+        const input = document.getElementById('svcSearch');
+        const cards = document.querySelectorAll('#servicesGrid > [data-name]');
+        if(!input) return;
+        input.addEventListener('input', () => {
+          const q = input.value.trim().toLowerCase();
+          cards.forEach(card => {
+            const name = (card.getAttribute('data-name') || '').toLowerCase();
+            const tags = (card.getAttribute('data-tags') || '').toLowerCase();
+            const show = !q || name.includes(q) || tags.includes(q);
+            card.style.display = show ? '' : 'none';
+          });
+        });
+      })();
+    </script>
+  </body>
+</html>
+{{ end }}

@@ -31,25 +31,25 @@ func (h *OauthHandler) Authorize(c *gin.Context) {
 	responseType := c.Query("response_type")
 
 	if clientID == "" || redirectURI == "" || responseType != "code" {
-		// helper.ErrorResponse(c, http.StatusBadRequest, "Invalid request parameters", nil)
 		helper.ClearSSO(c)
-		helper.RedirectBackToLogin(c, "/api/v1/oauth/login", c.Request.URL.RequestURI(), "",
+		helper.RedirectBackToLogin(c, "/login", c.Request.URL.RequestURI(), "",
 			"Invalid request parameters")
 		return
 	}
 
 	client, err := h.useCase.FindByID(clientID)
 	if err != nil || client.Redirect != redirectURI {
-		// helper.ErrorResponse(c, http.StatusBadRequest, "Invalid client or redirect URI", nil)
 		helper.ClearSSO(c)
-		helper.RedirectBackToLogin(c, "/api/v1/oauth/login", c.Request.URL.RequestURI(), "",
+		helper.RedirectBackToLogin(c, "/login", c.Request.URL.RequestURI(), "",
 			"Invalid client or redirect URI")
 		return
 	}
 
 	userId, ok := helper.GetSSO(c) // baca cookie sso_session
 	if !ok {
-		u := url.URL{Path: "/api/v1/oauth/login"}
+		config.Rdb.Set(c, "return_to", c.Request.URL.RequestURI(), 0)
+
+		u := url.URL{Path: "/login"}
 		q := u.Query()
 		q.Set("return_to", c.Request.URL.RequestURI())
 		u.RawQuery = q.Encode()
@@ -59,40 +59,33 @@ func (h *OauthHandler) Authorize(c *gin.Context) {
 
 	dataCookie, err := config.Rdb.Get(c, "sso:"+userId).Result()
 	if err != nil {
-		// helper.ErrorResponse(c, http.StatusUnauthorized, "SSO session expired or invalid", err)
 		helper.ClearSSO(c)
-		helper.RedirectBackToLogin(c, "/api/v1/oauth/login", c.Request.URL.RequestURI(), "",
+		helper.RedirectBackToLogin(c, "/login", c.Request.URL.RequestURI(), "",
 			"SSO session expired or invalid")
 		return
 	}
 
-	// delete SSO session after reading
-	config.Rdb.Del(c, "sso:"+userId)
-
 	var user dto.LoginResponseDTO
 	err = json.Unmarshal([]byte(dataCookie), &user)
 	if err != nil {
-		// helper.ErrorResponse(c, http.StatusInternalServerError, "Failed to parse user data", err)
 		helper.ClearSSO(c)
-		helper.RedirectBackToLogin(c, "/api/v1/oauth/login", c.Request.URL.RequestURI(), "",
+		helper.RedirectBackToLogin(c, "/login", c.Request.URL.RequestURI(), "",
 			"Failed to parse user data")
 		return
 	}
 
 	data, err := h.oauthUseCase.Authorize(clientID, redirectURI, responseType, &user)
 	if err != nil {
-		// helper.ErrorResponse(c, http.StatusInternalServerError, "Failed to generate authorization code", err)
 		helper.ClearSSO(c)
-		helper.RedirectBackToLogin(c, "/api/v1/oauth/login", c.Request.URL.RequestURI(), "",
+		helper.RedirectBackToLogin(c, "/login", c.Request.URL.RequestURI(), "",
 			"Failed to generate authorization code")
 		return
 	}
 
 	u, err := url.Parse(redirectURI)
 	if err != nil {
-		// helper.ErrorResponse(c, http.StatusBadRequest, "Invalid redirect URI", err)
 		helper.ClearSSO(c)
-		helper.RedirectBackToLogin(c, "/api/v1/oauth/login", c.Request.URL.RequestURI(), "",
+		helper.RedirectBackToLogin(c, "/login", c.Request.URL.RequestURI(), "",
 			"Invalid redirect URI")
 		return
 	}
@@ -132,7 +125,6 @@ func (h *OauthHandler) Token(c *gin.Context) {
 	}
 
 	val, err := config.Rdb.Get(c, code).Result()
-	// val, err := config.Rdb.GetDel(c, code).Result()
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusBadRequest, "Invalid authorization code", err)
 		return
@@ -187,13 +179,13 @@ func (h *OauthHandler) LoginPage(c *gin.Context) {
 func (h *OauthHandler) LoginPost(c *gin.Context) {
 	var form dto.LoginRequestFormDTO
 	if err := c.ShouldBind(&form); err != nil {
-		helper.RedirectBackToLogin(c, "/api/v1/oauth/login", form.ReturnTo, "",
+		helper.RedirectBackToLogin(c, "/login", form.ReturnTo, "",
 			"Invalid form data")
 		return
 	}
 
 	if !helper.ValidateCSRF(c) {
-		helper.RedirectBackToLogin(c, "/api/v1/oauth/login", form.ReturnTo, "",
+		helper.RedirectBackToLogin(c, "/login", form.ReturnTo, "",
 			"Invalid CSRF token")
 		return
 	}
@@ -205,7 +197,7 @@ func (h *OauthHandler) LoginPost(c *gin.Context) {
 
 	user, err := h.authUseCase.Login(jsonReq)
 	if err != nil {
-		helper.RedirectBackToLogin(c, "/api/v1/oauth/login", form.ReturnTo, "",
+		helper.RedirectBackToLogin(c, "/login", form.ReturnTo, "",
 			"Login failed: "+err.Error())
 		return
 	}
@@ -215,6 +207,54 @@ func (h *OauthHandler) LoginPost(c *gin.Context) {
 	helper.SetSSO(c, user, config.AppConfig.JWTExpirationHours*3600) // simpan cookie SSO selama JWTExpirationHours
 
 	c.Redirect(http.StatusSeeOther, form.ReturnTo)
+}
+
+func (h *OauthHandler) LoginCallback(c *gin.Context) {
+	token := c.Query("token")
+	userData := c.Query("user")
+	errorMsg := c.Query("error")
+
+	if token == "" || userData == "" {
+		helper.ClearSSO(c)
+		helper.RedirectBackToLogin(c, "/login", c.Request.URL.RequestURI(), "",
+			"Missing token or user data")
+		return
+	}
+
+	if errorMsg != "" {
+		helper.ClearSSO(c)
+		helper.RedirectBackToLogin(c, "/login", c.Request.URL.RequestURI(), "",
+			errorMsg)
+		return
+	}
+
+	var user dto.LoginResponseDTO
+	decodedUserData, err := base64.RawURLEncoding.DecodeString(userData)
+	if err != nil {
+		helper.ClearSSO(c)
+		helper.RedirectBackToLogin(c, "/login", c.Request.URL.RequestURI(), "",
+			"Failed to decode user data")
+		return
+	}
+
+	err = json.Unmarshal(decodedUserData, &user.User)
+	if err != nil {
+		helper.ClearSSO(c)
+		helper.RedirectBackToLogin(c, "/login", c.Request.URL.RequestURI(), "",
+			"Failed to parse user data")
+		return
+	}
+
+	user.Token = token
+
+	helper.SetSSO(c, &user, config.AppConfig.JWTExpirationHours*3600) // simpan cookie SSO selama JWTExpirationHours
+	return_to, _ := config.Rdb.Get(c, "return_to").Result()
+	config.Rdb.Del(c, "return_to")
+	c.Redirect(http.StatusSeeOther, return_to)
+}
+
+func (h *OauthHandler) IndexPage(c *gin.Context) {
+	c.HTML(http.StatusOK, "auth/index.tmpl", gin.H{})
 }
 
 func (h *OauthHandler) Logout(c *gin.Context) {

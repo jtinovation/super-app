@@ -1,73 +1,253 @@
 {{ define "auth/login.tmpl" }}
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="id" data-bs-theme="light">
   <head>
-    <meta charset="UTF-8" />
-    <title>Login</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{{ if .Title }}{{ .Title }} — {{ end }}Sign In</title>
+    <meta name="description" content="Single Sign-On (SSO) untuk layanan TI Jurusan Teknologi Informasi, Politeknik Negeri Jember." />
+    <meta name="author" content="Bangik" />
+    <link rel="icon" href="/static/favicon.ico" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" />
     <style>
-      body {
-        font-family: Arial, sans-serif;
-        background: #f4f4f4;
+      :root { --brand:#6c63ff; --cyan:#22d3ee; --indigo:#6366f1; }
+
+      /* ====== Layout & vertical centering ====== */
+      body { min-height:100vh; overflow-x:hidden; }
+      .viewport {
+        min-height: 100svh; /* safe viewport */
+        display: flex; align-items: center; /* vertical center */
+        position: relative; isolation:isolate; /* for bg layers */
       }
-      .login-container {
-        max-width: 350px;
-        margin: 60px auto;
-        padding: 30px 25px;
-        background: #fff;
-        border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+      /* ====== Animated abstract background ====== */
+      .bg-abstract {
+        position: absolute; inset: 0; z-index: -1; overflow: hidden;
+        background: radial-gradient(1200px 600px at 0% -10%, rgba(108,99,255,.08), transparent 60%),
+                    radial-gradient(1000px 500px at 110% 110%, rgba(34,211,238,.10), transparent 60%),
+                    linear-gradient(180deg,#f8fafc,#f3f4f6);
       }
-      .login-container h2 {
-        margin-bottom: 20px;
-        text-align: center;
+      .blob {
+        position: absolute; filter: blur(30px); opacity: .6;
+        will-change: transform;
+        transition: transform 0.2s linear;
       }
-      .login-container label {
-        display: block;
-        margin-bottom: 6px;
-        font-weight: bold;
+      .blob-1 { width: 420px; height: 420px; left: -80px; top: -60px;
+        background: radial-gradient(circle at 30% 30%, rgba(99,102,241,.75), rgba(99,102,241,0) 60%);
+        animation: float 18s ease-in-out infinite, drift 40s linear infinite;
       }
-      .login-container input[type="text"],
-      .login-container input[type="password"] {
-        width: 100%;
-        padding: 8px 10px;
-        margin-bottom: 16px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
+      .blob-2 { width: 520px; height: 520px; right: -120px; bottom: -80px;
+        background: radial-gradient(circle at 70% 70%, rgba(34,211,238,.7), rgba(34,211,238,0) 60%);
+        animation: float 22s ease-in-out infinite reverse, drift 55s linear infinite reverse;
       }
-      .login-container button {
-        width: 100%;
-        padding: 10px;
-        background: #0078d4;
-        color: #fff;
-        border: none;
-        border-radius: 4px;
-        font-size: 16px;
-        cursor: pointer;
+      .blob-3 { width: 360px; height: 360px; right: 20%; top: 10%;
+        background: radial-gradient(circle at 50% 50%, rgba(108,99,255,.55), rgba(108,99,255,0) 60%);
+        animation: float 26s ease-in-out infinite, rotate 60s linear infinite;
       }
-      .login-container button:hover {
-        background: #005fa3;
+      /* subtle grid lines for depth */
+      .grid {
+        position:absolute; inset:0; opacity:.35; pointer-events:none;
+        background-image:
+          linear-gradient(to right, rgba(15,23,42,.06) 1px, transparent 1px),
+          linear-gradient(to bottom, rgba(15,23,42,.06) 1px, transparent 1px);
+        background-size: 48px 48px;
+        mask-image: radial-gradient(70% 70% at 50% 50%, black, transparent 80%);
+      }
+      @keyframes float {
+        0%   { transform: translate3d(0, 0, 0) }
+        50%  { transform: translate3d(0, -20px, 0) }
+        100% { transform: translate3d(0, 0, 0) }
+      }
+      @keyframes drift {
+        0%   { transform: translateX(0) }
+        100% { transform: translateX(60px) }
+      }
+      @keyframes rotate {
+        0%   { transform: rotate(0deg) }
+        100% { transform: rotate(360deg) }
+      }
+      /* Respect reduced motion */
+      @media (prefers-reduced-motion: reduce) {
+        .blob { animation: none; }
+      }
+
+      /* ====== Card & components (dari versi sebelumnya) ====== */
+      .auth-card{
+        backdrop-filter: blur(6px);
+        background: rgba(255,255,255,.90);
+        border: 1px solid rgba(15,23,42,.06);
+        box-shadow: 0 20px 45px rgba(2,8,23,.06), 0 2px 6px rgba(2,8,23,.04);
+      }
+      .brand-logo{ width:350px;height:56px;object-fit:contain; }
+      .hero{
+        background:linear-gradient(135deg, rgba(108,99,255,.12), rgba(59,130,246,.12));
+        border:1px dashed rgba(15,23,42,.12);
+        border-radius:1.25rem;
+      }
+      .feature-card{
+        background:#fff;border:1px solid rgba(15,23,42,.06);
+        border-radius:1rem;padding:1rem;height:100%;
+      }
+      .badge-soft{ background: rgba(108,99,255,.12); color:#4338ca; border:1px solid rgba(108,99,255,.25); }
+      .divider{ display:flex;align-items:center;gap:.75rem;color:#6b7280;font-weight:600;letter-spacing:.08em; }
+      .divider::before,.divider::after{ content:"";flex:1;height:1px;background:rgba(15,23,42,.08); }
+      .btn-google{ border:1px solid rgba(15,23,42,.12);background:#fff; }
+      .btn-google:hover{ background:#f8fafc;border-color:rgba(15,23,42,.2); }
+      .form-control:focus{ box-shadow:0 0 0 .25rem rgba(108,99,255,.15);border-color:var(--brand); }
+      .small-muted{ color:#6b7280; }
+
+      /* Column order di mobile */
+      @media (max-width: 991.98px){
+        .left-col{ order:2; }
+        .right-col{ order:1; margin-bottom:1.25rem; }
       }
     </style>
   </head>
   <body>
-    <div class="login-container">
-      <h2>Login</h2>
-      {{ if .error }}
-      <p style="color: red;">{{ .error }}</p>
-      {{ end }}
-      <form method="POST" action="/api/v1/oauth/login">
-        <input type="hidden" name="return_to" value="{{ .return_to }}" />
-        <input type="hidden" name="csrf_token" value="{{ .csrf_token }}" />
-        <label for="email">Email</label>
-        <input type="text" id="email" name="email" required />
+    <div class="viewport">
+      <!-- Animated BG layers -->
+      <div class="bg-abstract">
+        <span class="blob blob-1"></span>
+        <span class="blob blob-2"></span>
+        <span class="blob blob-3"></span>
+        <div class="grid"></div>
+      </div>
 
-        <label for="password">Password</label>
-        <input type="password" id="password" name="password" required />
+      <main class="container py-4 py-md-5">
+        <div class="row justify-content-center g-4 align-items-stretch">
+          <!-- LEFT: Ilustrasi & copy -->
+          <div class="col-12 col-lg-7 left-col">
+            <div class="hero p-4 p-md-5 h-100">
+              <div class="d-flex align-items-center gap-3 mb-3">
+                  <img src="/static/logo-merge.png" alt="Logo" class="brand-logo">
+              </div>
 
-        <button type="submit">Login</button>
-      </form>
+              <h1 class="h3 fw-bold mb-2">Satu Akun untuk Semua Layanan TI</h1>
+              <p class="text-muted mb-4">
+                Akses aplikasi jurusan (Quisioner Dosen, JTISurat, SilabJTI, Slearn, dst.) dengan satu kali login.
+              </p>
+
+              <div class="row g-3 mb-4">
+                <div class="col-12 col-md-6">
+                  <div class="feature-card d-flex gap-3">
+                    <div class="flex-shrink-0 d-inline-flex align-items-center justify-content-center rounded-3 p-2" style="background:#eef2ff;">
+                      <svg width="22" height="22" viewBox="0 0 24 24"><path fill="#6366f1" d="M12 1L3 5v6c0 5 3.8 9.7 9 11c5.2-1.3 9-6 9-11V5l-9-4zm0 11.7l6-3.3l-6-3.3l-6 3.3l6 3.3z"/></svg>
+                    </div>
+                    <div><div class="fw-semibold">Satu Identitas</div><div class="small text-muted">Login konsisten lintas sistem.</div></div>
+                  </div>
+                </div>
+                <div class="col-12 col-md-6">
+                  <div class="feature-card d-flex gap-3">
+                    <div class="flex-shrink-0 d-inline-flex align-items-center justify-content-center rounded-3 p-2" style="background:#ecfeff;">
+                      <svg width="22" height="22" viewBox="0 0 24 24"><path fill="#06b6d4" d="M12 2a10 10 0 1 0 .001 20.001A10 10 0 0 0 12 2Zm-1 5h2v6h-2V7Zm0 8h2v2h-2v-2Z"/></svg>
+                    </div>
+                    <div><div class="fw-semibold">Aman & Terkontrol</div><div class="small text-muted">MFA/recaptcha & RBAC.</div></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-white rounded-4 border p-3 p-md-4">
+                <div class="row g-3 align-items-center">
+                  <div class="col-12 col-md-6">
+                    <h2 class="h5 mb-2">Aplikasi Terintegrasi</h2>
+                    <ul class="list-unstyled small mb-0">
+                      <li class="d-flex align-items-start gap-2"><span>✅</span><span>Quisioner Evaluasi Dosen</span></li>
+                      <li class="d-flex align-items-start gap-2"><span>✅</span><span>JTISurat & Bimbingan</span></li>
+                      <li class="d-flex align-items-start gap-2"><span>✅</span><span>Slearn & SilabJTI</span></li>
+                    </ul>
+                  </div>
+                  <div class="col-12 col-md-6 text-center">
+                    {{ if .HeroImageURL }}
+                      <img src="{{ .HeroImageURL }}" class="img-fluid" alt="Ilustrasi SSO" />
+                    {{ else }}
+                      <svg viewBox="0 0 600 300" class="img-fluid" role="img" aria-label="Ilustrasi SSO">
+                        <defs><linearGradient id="g" x1="0" x2="1"><stop offset="0" stop-color="#6366f1" stop-opacity=".25"/><stop offset="1" stop-color="#22d3ee" stop-opacity=".25"/></linearGradient></defs>
+                        <rect x="0" y="0" width="600" height="300" fill="url(#g)" rx="20"/>
+                        <g transform="translate(60,60)"><rect width="180" height="120" rx="12" fill="#fff" stroke="#e5e7eb"/><rect x="16" y="18" width="148" height="12" rx="6" fill="#e5e7eb"/><rect x="16" y="42" width="120" height="10" rx="5" fill="#eef2ff"/><rect x="16" y="64" width="100" height="10" rx="5" fill="#eef2ff"/><rect x="16" y="90" width="70" height="16" rx="8" fill="#6366f1" opacity=".8"/></g>
+                        <g transform="translate(280,90)"><circle cx="100" cy="60" r="60" fill="#fff" stroke="#e5e7eb"/><path d="M80 60h40" stroke="#6366f1" stroke-width="10" stroke-linecap="round"/><path d="M100 40v40" stroke="#22d3ee" stroke-width="10" stroke-linecap="round"/></g>
+                      </svg>
+                    {{ end }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT: Login form -->
+          <div class="col-12 col-lg-5 right-col">
+            <div class="auth-card rounded-4 p-4 p-md-5 h-100">
+              <div class="text-center mb-4">
+                <h1 class="h4 mt-1 mb-1">Masuk ke Akun Anda</h1>
+                <p class="small-muted mb-0">Gunakan email dan password atau SSO google POLIJE</p>
+              </div>
+
+              {{ if .Flash }}<div class="alert alert-success py-2">{{ .Flash }}</div>{{ end }}
+              {{ if .error }}<div class="alert alert-danger py-2">{{ .error }}</div>{{ end }}
+
+              <a href="/api/v1/auth/google/login" class="btn btn-google w-100 d-flex align-items-center justify-content-center gap-2 py-2 mb-3">
+                <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/><path d="M1 1h22v22H1z" fill="none"/></svg>
+                Login dengan akun Google POLIJE
+              </a>
+
+              <div class="divider my-3"><span>atau</span></div>
+
+              <form class="needs-validation" novalidate method="POST" action="/api/v1/oauth/login">
+                <input type="hidden" name="return_to" value="{{ .return_to }}" />
+                <input type="hidden" name="csrf_token" value="{{ .csrf_token }}" />
+                <div class="mb-3">
+                  <label for="email" class="form-label">Alamat Email</label>
+                  <input type="email" class="form-control form-control-lg" id="email" name="email" placeholder="you@example.com" value="{{ .Email }}" required autocomplete="email" inputmode="email" />
+                  <div class="invalid-feedback">Email tidak valid.</div>
+                </div>
+
+                <div class="mb-2">
+                  <label for="password" class="form-label d-flex justify-content-between">
+                    <span>Kata Sandi</span>
+                    <a class="small text-decoration-none" href="/forgot-password">Lupa sandi?</a>
+                  </label>
+                  <div class="input-group input-group-lg">
+                    <input type="password" class="form-control" id="password" name="password" placeholder="••••••••" required minlength="6" autocomplete="current-password" />
+                    <button class="btn btn-outline-secondary" type="button" id="togglePassword" aria-label="Tampilkan sandi">
+                      <span id="eyeClosed" aria-hidden="true" class="d-none">🙈</span>
+                      <span id="eyeOpen" aria-hidden="true">👁️</span>
+                    </button>
+                  </div>
+                  <div class="invalid-feedback">Minimal 6 karakter.</div>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-lg w-100 my-3">Masuk</button>
+              </form>
+            </div>
+
+            <p class="text-center small text-muted mt-3 mb-0">
+              Dilindungi reCAPTCHA. Berlaku <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Privacy Policy</a> & <a href="https://policies.google.com/terms" target="_blank" rel="noopener">Terms</a>.
+            </p>
+          </div>
+        </div>
+      </main>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      // Bootstrap validation
+      (() => {
+        const forms = document.querySelectorAll('.needs-validation');
+        Array.from(forms).forEach(form => {
+          form.addEventListener('submit', e => {
+            if (!form.checkValidity()) { e.preventDefault(); e.stopPropagation(); }
+            form.classList.add('was-validated');
+          }, false);
+        });
+      })();
+      // Toggle password
+      (function(){
+        const t=document.getElementById('togglePassword');
+        const i=document.getElementById('password');
+        const o=document.getElementById('eyeOpen');
+        const c=document.getElementById('eyeClosed');
+        if(t&&i){ t.addEventListener('click',()=>{ const p=i.type==='password'; i.type=p?'text':'password'; o.classList.toggle('d-none',!p); c.classList.toggle('d-none',p); }); }
+      })();
+    </script>
   </body>
 </html>
 {{ end }}

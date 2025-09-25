@@ -11,6 +11,7 @@ import (
 	"jti-super-app-go/pkg/constants"
 	"jti-super-app-go/pkg/helper"
 	"net/http"
+	"net/url"
 
 	"github.com/google/uuid"
 
@@ -59,7 +60,14 @@ func (h *AuthHandler) GoogleCallback(c *gin.Context) {
 	stateFromCookie, err := c.Cookie("oauth_state")
 	hostFromCookie, _ := c.Cookie("host")
 
-	fmt.Println("Host from cookie:", hostFromCookie)
+	parsedHost := hostFromCookie
+	if len(hostFromCookie) > 0 {
+		u, err := url.Parse(hostFromCookie)
+		if err == nil {
+			parsedHost = u.Scheme + "://" + u.Host
+		}
+	}
+	hostFromCookie = parsedHost
 
 	if err != nil {
 		c.Redirect(http.StatusTemporaryRedirect, hostFromCookie+constants.CALLBACK_FRONTEND+"?error="+base64.URLEncoding.EncodeToString([]byte("State cookie not found")))

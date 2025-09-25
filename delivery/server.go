@@ -28,6 +28,7 @@ func Server() *AppServer {
 	router.Use(sentrygin.New(sentrygin.Options{
 		Repanic: true,
 	}))
+	router.Static("/static", "./static")
 	router.LoadHTMLGlob("templates/**/*")
 	jwtService := service.NewJWTService()
 

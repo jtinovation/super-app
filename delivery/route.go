@@ -16,7 +16,7 @@ func SetupRoutes(router *gin.Engine, c *Container, jwtService service.JWTService
 			auth.POST("/email/resend", middleware.AuthMiddleware(jwtService), c.AuthHandler.ResendVerificationEmail)
 			auth.GET("/google/login", c.AuthHandler.GoogleLogin)
 			auth.GET("/google/callback", c.AuthHandler.GoogleCallback)
-			auth.POST("/login", c.AuthHandler.Login)
+			auth.Use(middleware.RateLimiter()).POST("/login", c.AuthHandler.Login)
 			auth.POST("/logout", middleware.AuthMiddleware(jwtService), c.AuthHandler.Logout)
 			auth.GET("/me", middleware.AuthMiddleware(jwtService), c.AuthHandler.Me)
 			auth.POST("/password/forgot", c.AuthHandler.ForgotPassword)
@@ -130,11 +130,17 @@ func SetupRoutes(router *gin.Engine, c *Container, jwtService service.JWTService
 
 		oauth := api.Group("/oauth")
 		{
-			oauth.Use(middleware.CSRFTokenMiddleware()).GET("/login", c.OauthHandler.LoginPage)
-			oauth.POST("/login", c.OauthHandler.LoginPost)
+			oauth.Use(middleware.RateLimiter()).POST("/login", c.OauthHandler.LoginPost)
 			oauth.POST("/token", c.OauthHandler.Token)
 			oauth.GET("/authorize", c.OauthHandler.Authorize)
 			oauth.GET("/logout", c.OauthHandler.Logout)
 		}
+	}
+
+	web := router.Group("/")
+	{
+		web.GET("", c.OauthHandler.IndexPage)
+		web.Use(middleware.CSRFTokenMiddleware()).GET("/login", c.OauthHandler.LoginPage)
+		web.GET("/auth/callback", c.OauthHandler.LoginCallback)
 	}
 }
