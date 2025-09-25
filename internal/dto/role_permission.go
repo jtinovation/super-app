@@ -27,3 +27,8 @@ type StorePermissionDTO struct {
 type UpdatePermissionDTO struct {
 	Name string `json:"name" binding:"required,max=100"`
 }
+
+type RoleOptionResource struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}

@@ -10,6 +10,7 @@ import (
 type RoleUseCase interface {
 	FindByID(id string) (*domain.Role, error)
 	FindAll(params dto.QueryParams) (*[]domain.Role, int64, error)
+	FindAllAsOptions() (*[]domain.Role, error)
 	Create(role *dto.StoreRoleDTO) (*domain.Role, error)
 	Update(id string, role *dto.UpdateRoleDTO) (*domain.Role, error)
 	Delete(id string) error
@@ -60,4 +61,8 @@ func (u *roleUseCase) Update(id string, role *dto.UpdateRoleDTO) (*domain.Role, 
 
 func (u *roleUseCase) Delete(id string) error {
 	return u.repo.Delete(id)
+}
+
+func (u *roleUseCase) FindAllAsOptions() (*[]domain.Role, error) {
+	return u.repo.FindAllAsOptions()
 }

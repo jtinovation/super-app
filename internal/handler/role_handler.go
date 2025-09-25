@@ -138,3 +138,21 @@ func (h *RoleHandler) Delete(c *gin.Context) {
 
 	helper.SuccessResponse(c, http.StatusOK, "Role deleted successfully", nil)
 }
+
+func (h *RoleHandler) FindAllAsOptions(c *gin.Context) {
+	roles, err := h.usecase.FindAllAsOptions()
+	if err != nil {
+		helper.ErrorResponse(c, http.StatusInternalServerError, "Failed to fetch roles", err)
+		return
+	}
+
+	roleOptions := []dto.Option{}
+	for _, role := range *roles {
+		roleOptions = append(roleOptions, dto.Option{
+			Value: role.ID,
+			Label: role.Name,
+		})
+	}
+
+	helper.SuccessResponse(c, http.StatusOK, "Roles fetched successfully", roleOptions)
+}

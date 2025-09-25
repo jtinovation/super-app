@@ -102,3 +102,11 @@ func (r *roleRepository) Delete(id string) error {
 	}
 	return nil
 }
+
+func (r *roleRepository) FindAllAsOptions() (*[]domain.Role, error) {
+	var roles []domain.Role
+	if err := r.db.Find(&roles).Error; err != nil {
+		return nil, err
+	}
+	return &roles, nil
+}

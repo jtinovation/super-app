@@ -66,6 +66,7 @@ func SetupRoutes(router *gin.Engine, c *Container, jwtService service.JWTService
 		roles := api.Group("/roles").Use(middleware.AuthMiddleware(jwtService))
 		{
 			roles.GET("", c.RoleHandler.FindAll)
+			roles.GET("/options", c.RoleHandler.FindAllAsOptions)
 			roles.GET("/:id", c.RoleHandler.FindByID)
 			roles.POST("", c.RoleHandler.Create)
 			roles.PUT("/:id", c.RoleHandler.Update)
@@ -134,6 +135,16 @@ func SetupRoutes(router *gin.Engine, c *Container, jwtService service.JWTService
 			oauth.POST("/token", c.OauthHandler.Token)
 			oauth.GET("/authorize", c.OauthHandler.Authorize)
 			oauth.GET("/logout", c.OauthHandler.Logout)
+		}
+
+		users := api.Group("/users").Use(middleware.AuthMiddleware(jwtService))
+		{
+			users.GET("", c.UserHandler.FindAll)
+			users.PUT("/:id/roles", c.UserHandler.UpdateRoles)
+			// users.GET("/:id", c.UserHandler.FindByID)
+			// users.POST("", c.UserHandler.Create)
+			// users.PUT("/:id", c.UserHandler.Update)
+			// users.DELETE("/:id", c.UserHandler.Delete)
 		}
 	}
 

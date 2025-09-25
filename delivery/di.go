@@ -25,6 +25,7 @@ type Container struct {
 	OauthHandler        *handler.OauthHandler
 	PermissionHandler   *handler.PermissionHandler
 	RoleHandler         *handler.RoleHandler
+	UserHandler         *handler.UserHandler
 }
 
 func InitContainer(db *gorm.DB, jwtService service.JWTService) *Container {
@@ -87,6 +88,9 @@ func InitContainer(db *gorm.DB, jwtService service.JWTService) *Container {
 	oauthUsecase := usecase.NewOauthUsecase()
 	oauthHandler := handler.NewOauthHandler(oauthClientUC, oauthUsecase, authUC)
 
+	userUC := usecase.NewUserUseCase(userRepo)
+	userHandler := handler.NewUserHandler(userUC)
+
 	return &Container{
 		AuthHandler:         authHandler,
 		EmployeeHandler:     employeeHandler,
@@ -101,5 +105,6 @@ func InitContainer(db *gorm.DB, jwtService service.JWTService) *Container {
 		OauthHandler:        oauthHandler,
 		PermissionHandler:   permissionHandler,
 		RoleHandler:         roleHandler,
+		UserHandler:         userHandler,
 	}
 }

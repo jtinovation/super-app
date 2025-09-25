@@ -5,6 +5,7 @@ import "jti-super-app-go/internal/dto"
 type RoleRepository interface {
 	FindByID(id string) (*Role, error)
 	FindAll(params dto.QueryParams) (*[]Role, int64, error)
+	FindAllAsOptions() (*[]Role, error)
 	Create(role *Role) (*Role, error)
 	Update(id string, role *Role) (*Role, error)
 	Delete(id string) error
