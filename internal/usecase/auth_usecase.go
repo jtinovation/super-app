@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"jti-super-app-go/config"
@@ -291,6 +292,19 @@ func (uc *authUseCase) ResendVerificationEmail(email string) error {
 }
 
 func (uc *authUseCase) Me(userID string) (*dto.UserLoginInfo, error) {
+	// Try to get user info from Redis cache first
+	cacheKey := "user_info:" + userID
+	var userInfo dto.UserLoginInfo
+
+	cached, err := config.Rdb.Get(context.Background(), cacheKey).Result()
+	if err == nil && cached != "" {
+		// Unmarshal cached JSON to userInfo
+		if err := json.Unmarshal([]byte(cached), &userInfo); err == nil {
+			return &userInfo, nil
+		}
+	}
+
+	// If not found in cache, get from repo
 	user, err := uc.userRepo.FindByID(userID)
 	if err != nil {
 		return nil, errors.New("user not found")
@@ -311,12 +325,19 @@ func (uc *authUseCase) Me(userID string) (*dto.UserLoginInfo, error) {
 		permissionNames = append(permissionNames, perm)
 	}
 
-	return &dto.UserLoginInfo{
+	userInfo = dto.UserLoginInfo{
 		ID:               user.ID,
 		Name:             user.Name,
 		Email:            user.Email,
 		IsChangePassword: user.IsChangePassword,
 		Roles:            roleNames,
 		Permissions:      permissionNames,
-	}, nil
+	}
+
+	// Marshal userInfo to JSON and store in Redis with TTL (e.g., 10 minutes)
+	if jsonBytes, err := json.Marshal(userInfo); err == nil {
+		_ = config.Rdb.Set(context.Background(), cacheKey, jsonBytes, 10*time.Minute).Err()
+	}
+
+	return &userInfo, nil
 }
