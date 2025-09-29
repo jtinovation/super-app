@@ -73,6 +73,14 @@ func (r *employeeRepository) FindByID(id string) (*domain.Employee, error) {
 	return &employee, nil
 }
 
+func (r *employeeRepository) FindByUserID(userID string) (*domain.Employee, error) {
+	var employee domain.Employee
+	if err := r.db.Preload("Major").Preload("StudyProgram").First(&employee, "m_user_id = ?", userID).Error; err != nil {
+		return nil, err
+	}
+	return &employee, nil
+}
+
 func (r *employeeRepository) FindAllAsOptions(position string, majorId string) (*[]domain.Employee, error) {
 	var employees []domain.Employee
 	query := r.db.Model(&domain.Employee{}).

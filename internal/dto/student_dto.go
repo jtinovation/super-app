@@ -1,6 +1,9 @@
 package dto
 
-import "mime/multipart"
+import (
+	"mime/multipart"
+	"time"
+)
 
 type StoreStudentDTO struct {
 	Name           string  `form:"name" binding:"required,max=255"`
@@ -45,6 +48,7 @@ type UpdateStudentDTO struct {
 
 type StudentResource struct {
 	ID           string                     `json:"id"`
+	UserID       string                     `json:"user_id"`
 	NIM          string                     `json:"nim"`
 	Name         string                     `json:"name"`
 	Generation   *int                       `json:"generation"`
@@ -64,4 +68,16 @@ type StudentDetailResource struct {
 	MajorId        string                    `json:"major_id"`
 	User           UserResource              `json:"user"`
 	Semesters      []StudentSemesterResource `json:"semesters"`
+}
+
+type StudentDetailInfoDTO struct {
+	ID               string     `json:"id"`
+	NIM              string     `json:"nim"`
+	Generation       *int       `json:"generation"`
+	MajorID          *string    `json:"m_major_id"`
+	MajorName        *string    `json:"major_name"`
+	StudyProgramID   *string    `json:"m_study_program_id"`
+	StudyProgramName *string    `json:"study_program_name"`
+	CreatedAt        *time.Time `json:"created_at,omitempty"`
+	UpdatedAt        *time.Time `json:"updated_at,omitempty"`
 }

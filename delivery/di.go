@@ -30,16 +30,17 @@ type Container struct {
 
 func InitContainer(db *gorm.DB, jwtService service.JWTService) *Container {
 	emailService := service.NewEmailService(config.AppConfig.Email)
+	employeeRepo := repository.NewEmployeeRepository(db)
 	googleAuthService := service.NewGoogleAuthService(config.AppConfig)
+	studentRepo := repository.NewStudentRepository(db)
 
 	authRepo := repository.NewAuthRepository(db)
 	userRepo := repository.NewUserRepository(db)
 	passwordResetRepo := repository.NewPasswordResetRepository(db)
 
-	authUC := usecase.NewAuthUseCase(authRepo, userRepo, passwordResetRepo, jwtService, emailService)
+	authUC := usecase.NewAuthUseCase(authRepo, userRepo, employeeRepo, studentRepo, passwordResetRepo, jwtService, emailService)
 	authHandler := handler.NewAuthHandler(authUC, googleAuthService)
 
-	employeeRepo := repository.NewEmployeeRepository(db)
 	employeeUC := usecase.NewEmployeeUseCase(db, employeeRepo, userRepo)
 	employeeHandler := handler.NewEmployeeHandler(employeeUC)
 
@@ -67,7 +68,6 @@ func InitContainer(db *gorm.DB, jwtService service.JWTService) *Container {
 	sessionUC := usecase.NewSessionUseCase(sessionRepo)
 	sessionHandler := handler.NewSessionHandler(sessionUC)
 
-	studentRepo := repository.NewStudentRepository(db)
 	studentSemesterRepo := repository.NewStudentSemesterRepository(db)
 	studentUC := usecase.NewStudentUseCase(db, studentRepo, userRepo, studentSemesterRepo)
 	studentHandler := handler.NewStudentHandler(studentUC)

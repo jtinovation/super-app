@@ -111,6 +111,19 @@ func (r *studentRepository) FindByID(id string) (*domain.Student, error) {
 	return &student, nil
 }
 
+func (r *studentRepository) FindByUserID(userID string) (*domain.Student, error) {
+	var student domain.Student
+	if err := r.db.Preload("StudyProgram.Major").First(&student, "m_user_id = ?", userID).Error; err != nil {
+		return nil, err
+	}
+
+	sort.Slice(student.StudentSemesters, func(i, j int) bool {
+		return student.StudentSemesters[i].Semester.Semester < student.StudentSemesters[j].Semester.Semester
+	})
+
+	return &student, nil
+}
+
 func (r *studentRepository) Create(student *domain.Student) (*domain.Student, error) {
 	if err := r.db.Create(student).Error; err != nil {
 		return nil, err

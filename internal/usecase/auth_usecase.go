@@ -13,6 +13,7 @@ import (
 	"jti-super-app-go/internal/service"
 	"jti-super-app-go/pkg/constants"
 	"jti-super-app-go/pkg/helper"
+	"slices"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
@@ -26,21 +27,25 @@ type AuthUseCase interface {
 	ResendVerificationEmail(email string) error
 	ForgotPassword(req dto.ForgotPasswordRequestDTO) error
 	ResetPassword(req dto.ResetPasswordRequestDTO) error
-	Me(userID string) (*dto.UserLoginInfo, error)
+	Me(userID string) (*dto.UserDetailInfoDTO, error)
 }
 
 type authUseCase struct {
 	authRepo      domain.AuthRepository
 	userRepo      domain.UserRepository
+	employeeRepo  domain.EmployeeRepository
+	studentRepo   domain.StudentRepository
 	passResetRepo domain.PasswordResetRepository
 	jwtService    service.JWTService
 	emailService  service.EmailService
 }
 
-func NewAuthUseCase(authRepo domain.AuthRepository, userRepo domain.UserRepository, passResetRepo domain.PasswordResetRepository, jwtService service.JWTService, emailService service.EmailService) AuthUseCase {
+func NewAuthUseCase(authRepo domain.AuthRepository, userRepo domain.UserRepository, employeeRepo domain.EmployeeRepository, studentRepo domain.StudentRepository, passResetRepo domain.PasswordResetRepository, jwtService service.JWTService, emailService service.EmailService) AuthUseCase {
 	return &authUseCase{
 		authRepo:      authRepo,
 		userRepo:      userRepo,
+		employeeRepo:  employeeRepo,
+		studentRepo:   studentRepo,
 		passResetRepo: passResetRepo,
 		jwtService:    jwtService,
 		emailService:  emailService,
@@ -291,20 +296,19 @@ func (uc *authUseCase) ResendVerificationEmail(email string) error {
 	return nil
 }
 
-func (uc *authUseCase) Me(userID string) (*dto.UserLoginInfo, error) {
-	// Try to get user info from Redis cache first
+func (uc *authUseCase) Me(userID string) (*dto.UserDetailInfoDTO, error) {
 	cacheKey := "user_info:" + userID
-	var userInfo dto.UserLoginInfo
+	var userInfo dto.UserDetailInfoDTO
+	var employee *domain.Employee
+	var student *domain.Student
 
 	cached, err := config.Rdb.Get(context.Background(), cacheKey).Result()
 	if err == nil && cached != "" {
-		// Unmarshal cached JSON to userInfo
 		if err := json.Unmarshal([]byte(cached), &userInfo); err == nil {
 			return &userInfo, nil
 		}
 	}
 
-	// If not found in cache, get from repo
 	user, err := uc.userRepo.FindByID(userID)
 	if err != nil {
 		return nil, errors.New("user not found")
@@ -325,13 +329,67 @@ func (uc *authUseCase) Me(userID string) (*dto.UserLoginInfo, error) {
 		permissionNames = append(permissionNames, perm)
 	}
 
-	userInfo = dto.UserLoginInfo{
+	if slices.Contains(roleNames, "student") {
+		employee = &domain.Employee{}
+		stud, err := uc.studentRepo.FindByUserID(userID)
+		if err == nil {
+			student = stud
+		} else {
+			student = &domain.Student{}
+		}
+	} else {
+		student = &domain.Student{}
+		emp, err := uc.employeeRepo.FindByUserID(userID)
+		if err == nil {
+			employee = emp
+		} else {
+			employee = &domain.Employee{}
+		}
+	}
+
+	userInfo = dto.UserDetailInfoDTO{
 		ID:               user.ID,
 		Name:             user.Name,
 		Email:            user.Email,
+		EmailVerifiedAt:  user.EmailVerifiedAt,
+		Status:           user.Status,
+		Gender:           user.Gender,
+		Religion:         user.Religion,
+		BirthPlace:       user.BirthPlace,
+		BirthDate:        user.BirthDate,
+		PhoneNumber:      user.PhoneNumber,
+		Address:          user.Address,
+		Nationality:      user.Nationality,
+		ImgPath:          user.ImgPath,
+		ImgName:          user.ImgName,
 		IsChangePassword: user.IsChangePassword,
 		Roles:            roleNames,
 		Permissions:      permissionNames,
+		CreatedAt:        user.CreatedAt,
+		UpdatedAt:        user.UpdatedAt,
+		DeletedAt:        user.DeletedAt,
+		EmployeeDetail: &dto.EmployeeDetailInfoDTO{
+			ID:               employee.ID,
+			NIP:              employee.Nip,
+			MajorID:          employee.MajorID,
+			MajorName:        &employee.Major.Name,
+			StudyProgramID:   employee.StudyProgramID,
+			StudyProgramName: &employee.StudyProgram.Name,
+			Position:         employee.Position,
+			CreatedAt:        &employee.CreatedAt,
+			UpdatedAt:        &employee.UpdatedAt,
+		},
+		StudentDetail: &dto.StudentDetailInfoDTO{
+			ID:               student.ID,
+			NIM:              student.NIM,
+			Generation:       student.Generation,
+			MajorID:          &student.StudyProgram.MajorID,
+			MajorName:        &student.StudyProgram.Major.Name,
+			StudyProgramID:   &student.StudyProgram.ID,
+			StudyProgramName: &student.StudyProgram.Name,
+			CreatedAt:        &student.CreatedAt,
+			UpdatedAt:        &student.UpdatedAt,
+		},
 	}
 
 	// Marshal userInfo to JSON and store in Redis with TTL (e.g., 10 minutes)

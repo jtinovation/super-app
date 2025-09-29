@@ -41,6 +41,7 @@ func (h *EmployeeHandler) FindAll(c *gin.Context) {
 
 		employeeResources = append(employeeResources, dto.EmployeeResource{
 			ID:       emp.ID,
+			UserID:   emp.UserID,
 			Name:     emp.Name,
 			Email:    emp.Email,
 			NIP:      emp.Nip,

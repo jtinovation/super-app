@@ -8,17 +8,19 @@ import (
 )
 
 type Employee struct {
-	ID        string  `gorm:"type:char(36);primaryKey"`
-	UserID    string  `gorm:"column:m_user_id;type:char(36);not null"`
-	MajorID   *string `gorm:"column:m_major_id;type:char(36)"` // Nullable
-	Nip       string  `gorm:"type:varchar(255);not null"`
-	Position  string  `gorm:"type:enum('LECTURER','STAFF');not null"`
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	DeletedAt gorm.DeletedAt `gorm:"index"`
+	ID             string  `gorm:"type:char(36);primaryKey"`
+	UserID         string  `gorm:"column:m_user_id;type:char(36);not null"`
+	MajorID        *string `gorm:"column:m_major_id;type:char(36)"`         // Nullable
+	StudyProgramID *string `gorm:"column:m_study_program_id;type:char(36)"` // Nullable
+	Nip            string  `gorm:"type:varchar(255);not null"`
+	Position       string  `gorm:"type:enum('LECTURER','STAFF');not null"`
+	CreatedAt      time.Time
+	UpdatedAt      time.Time
+	DeletedAt      gorm.DeletedAt `gorm:"index"`
 
 	User             User              `gorm:"foreignKey:UserID;references:ID"`
 	Major            Major             `gorm:"foreignKey:MajorID;references:ID"`
+	StudyProgram     StudyProgram      `gorm:"foreignKey:StudyProgramID;references:ID"`
 	SubjectSemesters []SubjectSemester `gorm:"many2many:m_subject_lecture;using:jti-super-app-go/internal/domain.SubjectLecture;foreignKey:ID;joinForeignKey:m_employee_id;References:ID;joinReferences:m_subject_semester_id"`
 
 	Name    string `json:"name" gorm:"column:name;<-:false;->"`
@@ -34,6 +36,7 @@ func (Employee) TableName() string {
 type EmployeeRepository interface {
 	FindAll(params dto.QueryParams, position string, majorId string) (*[]Employee, int64, error)
 	FindByID(id string) (*Employee, error)
+	FindByUserID(userID string) (*Employee, error)
 	FindAllAsOptions(position string, majorId string) (*[]Employee, error)
 	Create(employee *Employee) (*Employee, error)
 	Update(id string, employee *Employee) (*Employee, error)

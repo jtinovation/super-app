@@ -48,6 +48,7 @@ type UpdateEmployeeDTO struct {
 
 type EmployeeResource struct {
 	ID       string `json:"id"`
+	UserID   string `json:"user_id"`
 	Name     string `json:"name"`
 	Email    string `json:"email"`
 	NIP      string `json:"nip"`
@@ -78,4 +79,16 @@ type EmployeeDetailResource struct {
 	Major     MajorOptionResource `json:"major"`
 	CreatedAt time.Time           `json:"created_at"`
 	UpdatedAt time.Time           `json:"updated_at"`
+}
+
+type EmployeeDetailInfoDTO struct {
+	ID               string     `json:"id"`
+	NIP              string     `json:"nip"`
+	Position         string     `json:"position"`
+	MajorID          *string    `json:"m_major_id"`
+	MajorName        *string    `json:"major_name"`
+	StudyProgramID   *string    `json:"m_study_program_id"`
+	StudyProgramName *string    `json:"study_program_name"`
+	CreatedAt        *time.Time `json:"created_at,omitempty"`
+	UpdatedAt        *time.Time `json:"updated_at,omitempty"`
 }

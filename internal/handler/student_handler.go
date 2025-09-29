@@ -38,6 +38,7 @@ func (h *StudentHandler) FindAll(c *gin.Context) {
 		}
 		studentResources = append(studentResources, dto.StudentResource{
 			ID:           s.ID,
+			UserID:       s.UserID,
 			NIM:          s.NIM,
 			Name:         s.Name,
 			Generation:   s.Generation,

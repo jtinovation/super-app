@@ -40,6 +40,7 @@ func (Student) TableName() string {
 type StudentRepository interface {
 	FindAll(params dto.QueryParams) (*[]Student, int64, error)
 	FindByID(id string) (*Student, error)
+	FindByUserID(userID string) (*Student, error)
 	Create(student *Student) (*Student, error)
 	Update(id string, student *Student) (*Student, error)
 	Delete(id string) error
