@@ -17,7 +17,7 @@ func (r *subjectSemesterRepository) GetLectureOnSubject(studyProgramID, semester
 	var subjectSemesters []domain.SubjectSemester
 	err := r.db.
 		Preload("Subject").
-		Preload("Lecturers.User").
+		Preload("SubjectLectures.Employee.User").
 		Joins("JOIN m_subject ON m_subject.id = m_subject_semester.m_subject_id").
 		Where("m_subject.m_study_program_id = ?", studyProgramID).
 		Where("m_subject_semester.m_semester_id = ?", semesterID).

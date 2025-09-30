@@ -41,9 +41,10 @@ type LectureUserResource struct {
 }
 
 type LectureResource struct {
-	ID      string              `json:"id"`
-	MajorID *string             `json:"major_id"`
-	User    LectureUserResource `json:"user"`
+	ID               string              `json:"id"`
+	MajorID          *string             `json:"major_id"`
+	User             LectureUserResource `json:"user"`
+	SubjectLectureID string              `json:"subject_lecture_id"`
 }
 
 type LectureOnSubjectSubjectResource struct {

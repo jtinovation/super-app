@@ -15,9 +15,10 @@ type SubjectSemester struct {
 	CreatedAt  time.Time
 	UpdatedAt  time.Time
 
-	Subject   Subject    `gorm:"foreignKey:SubjectID"`
-	Semester  Semester   `gorm:"foreignKey:SemesterID"`
-	Lecturers []Employee `gorm:"many2many:m_subject_lecture;using:jti-super-app-go/internal/domain.SubjectLecture;foreignKey:ID;joinForeignKey:m_subject_semester_id;References:ID;joinReferences:m_employee_id"`
+	Subject         Subject          `gorm:"foreignKey:SubjectID"`
+	Semester        Semester         `gorm:"foreignKey:SemesterID"`
+	SubjectLectures []SubjectLecture `gorm:"foreignKey:SubjectSemesterID"`
+	// Lecturers []Employee `gorm:"many2many:m_subject_lecture;using:jti-super-app-go/internal/domain.SubjectLecture;foreignKey:ID;joinForeignKey:m_subject_semester_id;References:ID;joinReferences:m_employee_id"`
 }
 
 func (SubjectSemester) TableName() string {

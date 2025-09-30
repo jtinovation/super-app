@@ -123,20 +123,40 @@ func (h *SubjectHandler) GetLectureOnSubject(c *gin.Context) {
 	resources := []dto.LectureOnSubjectResource{}
 	for _, item := range *data {
 		lectures := []dto.LectureResource{}
-		for _, l := range item.Lecturers {
+
+		// DIUBAH: Looping sekarang melalui item.SubjectLectures
+		for _, sl := range item.SubjectLectures {
+			// Data dosen (lecturer) sekarang ada di dalam sl.Employee
+			l := sl.Employee
+
 			avatarURL := ""
 			if l.User.ImgPath != nil && l.User.ImgName != nil {
 				avatarURL = helper.GetUrlFile(*l.User.ImgPath, *l.User.ImgName)
 			}
+
 			lectures = append(lectures, dto.LectureResource{
-				ID: l.ID, MajorID: l.MajorID,
-				User: dto.LectureUserResource{ID: l.User.ID, Name: l.User.Name, Avatar: avatarURL},
+				// DITAMBAHKAN: Mengambil ID dari SubjectLecture
+				SubjectLectureID: sl.ID,
+
+				// Data lainnya tetap sama, hanya cara mengaksesnya yang berubah
+				ID:      l.ID,
+				MajorID: l.MajorID,
+				User: dto.LectureUserResource{
+					ID:     l.User.ID,
+					Name:   l.User.Name,
+					Avatar: avatarURL,
+				},
 			})
 		}
+
 		resources = append(resources, dto.LectureOnSubjectResource{
-			ID: item.ID, SemesterID: item.SemesterID,
+			ID:         item.ID,
+			SemesterID: item.SemesterID,
 			Subject: dto.LectureOnSubjectSubjectResource{
-				ID: item.Subject.ID, Name: item.Subject.Name, Code: item.Subject.Code, StudyProgramID: item.Subject.StudyProgramID,
+				ID:             item.Subject.ID,
+				Name:           item.Subject.Name,
+				Code:           item.Subject.Code,
+				StudyProgramID: item.Subject.StudyProgramID,
 			},
 			Lectures: lectures,
 		})

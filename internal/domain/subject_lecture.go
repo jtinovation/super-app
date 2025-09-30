@@ -6,9 +6,10 @@ import (
 )
 
 type SubjectLecture struct {
-	ID                string `gorm:"type:char(36);primaryKey"`
-	SubjectSemesterID string `gorm:"column:m_subject_semester_id;type:char(36);not null"`
-	EmployeeID        string `gorm:"column:m_employee_id;type:char(36);not null"`
+	ID                string   `gorm:"type:char(36);primaryKey"`
+	SubjectSemesterID string   `gorm:"column:m_subject_semester_id;type:char(36);not null"`
+	EmployeeID        string   `gorm:"column:m_employee_id;type:char(36);not null"`
+	Employee          Employee `gorm:"foreignKey:EmployeeID"`
 }
 
 func (SubjectLecture) TableName() string {

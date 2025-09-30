@@ -113,7 +113,7 @@ func (r *studentRepository) FindByID(id string) (*domain.Student, error) {
 
 func (r *studentRepository) FindByUserID(userID string) (*domain.Student, error) {
 	var student domain.Student
-	if err := r.db.Preload("StudyProgram.Major").First(&student, "m_user_id = ?", userID).Error; err != nil {
+	if err := r.db.Preload("StudyProgram.Major").Preload("StudentSemesters").First(&student, "m_user_id = ?", userID).Error; err != nil {
 		return nil, err
 	}
 

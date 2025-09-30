@@ -9,6 +9,7 @@ type StudentSemester struct {
 	StudentID  string   `gorm:"column:m_student_id;type:char(36);not null"`
 	SemesterID string   `gorm:"column:m_semester_id;type:char(36);not null"`
 	Class      string   `gorm:"type:enum('A','B','C','D','E','F','G','H','I','J')"`
+	IsActive   bool     `gorm:"type:boolean;default:false"`
 	Semester   Semester `gorm:"foreignKey:SemesterID;references:ID"`
 	CreatedAt  time.Time
 	UpdatedAt  time.Time

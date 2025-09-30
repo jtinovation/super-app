@@ -301,6 +301,7 @@ func (uc *authUseCase) Me(userID string) (*dto.UserDetailInfoDTO, error) {
 	var userInfo dto.UserDetailInfoDTO
 	var employee *domain.Employee
 	var student *domain.Student
+	studentSemesters := &[]dto.StudentSemesterDTO{}
 
 	cached, err := config.Rdb.Get(context.Background(), cacheKey).Result()
 	if err == nil && cached != "" {
@@ -334,6 +335,19 @@ func (uc *authUseCase) Me(userID string) (*dto.UserDetailInfoDTO, error) {
 		stud, err := uc.studentRepo.FindByUserID(userID)
 		if err == nil {
 			student = stud
+			if student != nil && len(student.StudentSemesters) > 0 {
+				var semesters []dto.StudentSemesterDTO
+				for _, ss := range student.StudentSemesters {
+					semesters = append(semesters, dto.StudentSemesterDTO{
+						ID:         ss.ID,
+						SemesterID: ss.SemesterID,
+						StudentID:  ss.StudentID,
+						Class:      ss.Class,
+						IsActive:   ss.IsActive,
+					})
+				}
+				studentSemesters = &semesters
+			}
 		} else {
 			student = &domain.Student{}
 		}
@@ -387,6 +401,7 @@ func (uc *authUseCase) Me(userID string) (*dto.UserDetailInfoDTO, error) {
 			MajorName:        &student.StudyProgram.Major.Name,
 			StudyProgramID:   &student.StudyProgram.ID,
 			StudyProgramName: &student.StudyProgram.Name,
+			StudentSemesters: studentSemesters,
 			CreatedAt:        &student.CreatedAt,
 			UpdatedAt:        &student.UpdatedAt,
 		},
