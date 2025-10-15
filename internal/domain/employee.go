@@ -37,7 +37,7 @@ type EmployeeRepository interface {
 	FindAll(params dto.QueryParams, position string, majorId string) (*[]Employee, int64, error)
 	FindByID(id string) (*Employee, error)
 	FindByUserID(userID string) (*Employee, error)
-	FindAllAsOptions(position string, majorId string) (*[]Employee, error)
+	FindAllAsOptions(position string, majorId string, studyProgramId string) (*[]Employee, error)
 	Create(employee *Employee) (*Employee, error)
 	Update(id string, employee *Employee) (*Employee, error)
 	Delete(id string) error

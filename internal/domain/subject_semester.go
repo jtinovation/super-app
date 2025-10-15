@@ -9,15 +9,15 @@ import (
 )
 
 type SubjectSemester struct {
-	ID         string `gorm:"type:char(36);primaryKey"`
-	SubjectID  string `gorm:"column:m_subject_id;type:char(36);not null"`
-	SemesterID string `gorm:"column:m_semester_id;type:char(36);not null"`
-	CreatedAt  time.Time
-	UpdatedAt  time.Time
+	ID         string    `gorm:"type:char(36);primaryKey" json:"id"`
+	SubjectID  string    `gorm:"column:m_subject_id;type:char(36);not null" json:"subject_id"`
+	SemesterID string    `gorm:"column:m_semester_id;type:char(36);not null" json:"semester_id"`
+	CreatedAt  time.Time `json:"created_at"`
+	UpdatedAt  time.Time `json:"updated_at"`
 
-	Subject         Subject          `gorm:"foreignKey:SubjectID"`
-	Semester        Semester         `gorm:"foreignKey:SemesterID"`
-	SubjectLectures []SubjectLecture `gorm:"foreignKey:SubjectSemesterID"`
+	Subject         Subject          `gorm:"foreignKey:SubjectID" json:"subject"`
+	Semester        Semester         `gorm:"foreignKey:SemesterID" json:"semester"`
+	SubjectLectures []SubjectLecture `gorm:"foreignKey:SubjectSemesterID" json:"subject_lectures"`
 	// Lecturers []Employee `gorm:"many2many:m_subject_lecture;using:jti-super-app-go/internal/domain.SubjectLecture;foreignKey:ID;joinForeignKey:m_subject_semester_id;References:ID;joinReferences:m_employee_id"`
 }
 

@@ -104,8 +104,9 @@ func (h *EmployeeHandler) FindByID(c *gin.Context) {
 func (h *EmployeeHandler) FindAllAsOptions(c *gin.Context) {
 	position := c.Query("position")
 	majorId := c.Query("major_id")
+	studyProgramId := c.Query("study_program_id")
 
-	employees, err := h.useCase.FindAllAsOptions(position, majorId)
+	employees, err := h.useCase.FindAllAsOptions(position, majorId, studyProgramId)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusInternalServerError, "Failed to fetch employee options", err)
 		return

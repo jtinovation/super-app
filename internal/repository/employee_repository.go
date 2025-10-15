@@ -81,7 +81,7 @@ func (r *employeeRepository) FindByUserID(userID string) (*domain.Employee, erro
 	return &employee, nil
 }
 
-func (r *employeeRepository) FindAllAsOptions(position string, majorId string) (*[]domain.Employee, error) {
+func (r *employeeRepository) FindAllAsOptions(position string, majorId string, studyProgramId string) (*[]domain.Employee, error) {
 	var employees []domain.Employee
 	query := r.db.Model(&domain.Employee{}).
 		Select("m_employee.id, m_user.name").
@@ -92,6 +92,9 @@ func (r *employeeRepository) FindAllAsOptions(position string, majorId string) (
 	}
 	if majorId != "" {
 		query = query.Where("m_major_id = ?", majorId)
+	}
+	if studyProgramId != "" {
+		query = query.Where("m_study_program_id = ?", studyProgramId)
 	}
 
 	if err := query.Find(&employees).Error; err != nil {

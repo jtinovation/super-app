@@ -8,13 +8,13 @@ import (
 )
 
 type Semester struct {
-	ID        string `gorm:"type:char(36);primaryKey"`
-	SessionID string `gorm:"column:m_session_id;type:char(36);not null"`
-	Year      int    `gorm:"type:int;not null"`
-	Semester  string `gorm:"type:varchar(2);not null"`
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	DeletedAt gorm.DeletedAt `gorm:"index"`
+	ID        string         `gorm:"type:char(36);primaryKey" json:"id"`
+	SessionID string         `gorm:"column:m_session_id;type:char(36);not null" json:"session_id"`
+	Year      int            `gorm:"type:int;not null" json:"year"`
+	Semester  string         `gorm:"type:varchar(2);not null" json:"semester"`
+	CreatedAt time.Time      `json:"created_at"`
+	UpdatedAt time.Time      `json:"updated_at"`
+	DeletedAt gorm.DeletedAt `gorm:"index" json:"deleted_at"`
 
 	Session  Session   `gorm:"foreignKey:SessionID;references:ID"`
 	Subjects []Subject `gorm:"many2many:m_subject_semester;foreignKey:ID;joinForeignKey:m_semester_id;References:ID;joinReferences:m_subject_id"`

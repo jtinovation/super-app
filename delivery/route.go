@@ -120,6 +120,11 @@ func SetupRoutes(router *gin.Engine, c *Container, jwtService service.JWTService
 			subjects.POST("/lectures", c.SubjectHandler.StoreLectureOnSubject)
 		}
 
+		subjectLectures := api.Group("/subject-lectures").Use(middleware.AuthMiddleware(jwtService))
+		{
+			subjectLectures.GET("", c.SubjectLectureHandler.FindAll)
+		}
+
 		oauthClients := api.Group("/oauth-clients")
 		{
 			oauthClients.GET("", c.OauthClientHandler.FindAll)

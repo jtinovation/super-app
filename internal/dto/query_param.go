@@ -6,5 +6,5 @@ type QueryParams struct {
 	Search  string
 	Sort    string
 	Order   string
-	Filter  map[string]string
+	Filter  map[string]interface{}
 }

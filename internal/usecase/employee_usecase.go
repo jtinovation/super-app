@@ -18,7 +18,7 @@ import (
 type EmployeeUseCase interface {
 	FindAll(params dto.QueryParams, position string, majorId string) (*[]domain.Employee, int64, error)
 	FindByID(id string) (*domain.Employee, error)
-	FindAllAsOptions(position string, majorId string) (*[]domain.Employee, error)
+	FindAllAsOptions(position string, majorId string, studyProgramId string) (*[]domain.Employee, error)
 	Create(dto *dto.StoreEmployeeDTO) (*domain.Employee, error)
 	Update(id string, dto *dto.UpdateEmployeeDTO) (*domain.Employee, error)
 	Delete(id string) error
@@ -46,8 +46,8 @@ func (u *employeeUseCase) FindByID(id string) (*domain.Employee, error) {
 	return u.empRepo.FindByID(id)
 }
 
-func (u *employeeUseCase) FindAllAsOptions(position string, majorId string) (*[]domain.Employee, error) {
-	return u.empRepo.FindAllAsOptions(position, majorId)
+func (u *employeeUseCase) FindAllAsOptions(position string, majorId string, studyProgramId string) (*[]domain.Employee, error) {
+	return u.empRepo.FindAllAsOptions(position, majorId, studyProgramId)
 }
 
 func (u *employeeUseCase) Create(payload *dto.StoreEmployeeDTO) (*domain.Employee, error) {

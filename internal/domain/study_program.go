@@ -8,12 +8,12 @@ import (
 )
 
 type StudyProgram struct {
-	ID        string `gorm:"type:char(36);primaryKey"`
-	MajorID   string `gorm:"column:m_major_id;type:char(36);not null"`
-	Code      string `gorm:"type:varchar(255);not null"`
-	Name      string `gorm:"type:varchar(255);not null"`
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ID        string         `gorm:"type:char(36);primaryKey" json:"id"`
+	MajorID   string         `gorm:"column:m_major_id;type:char(36);not null" json:"major_id"`
+	Code      string         `gorm:"type:varchar(255);not null" json:"code"`
+	Name      string         `gorm:"type:varchar(255);not null" json:"name"`
+	CreatedAt time.Time      `json:"created_at"`
+	UpdatedAt time.Time      `json:"updated_at"`
 	DeletedAt gorm.DeletedAt `gorm:"index"`
 
 	Major Major `gorm:"foreignKey:MajorID;references:ID"`

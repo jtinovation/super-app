@@ -11,21 +11,22 @@ import (
 )
 
 type Container struct {
-	AuthHandler         *handler.AuthHandler
-	EmployeeHandler     *handler.EmployeeHandler
-	LabHandler          *handler.LabHandler
-	MajorHandler        *handler.MajorHandler
-	SemesterHandler     *handler.SemesterHandler
-	SessionHandler      *handler.SessionHandler
-	StudentHandler      *handler.StudentHandler
-	StudyProgramHandler *handler.StudyProgramHandler
-	SubjectHandler      *handler.SubjectHandler
-	GoogleAuthService   service.GoogleAuthService
-	OauthClientHandler  *handler.OauthClientHandler
-	OauthHandler        *handler.OauthHandler
-	PermissionHandler   *handler.PermissionHandler
-	RoleHandler         *handler.RoleHandler
-	UserHandler         *handler.UserHandler
+	AuthHandler           *handler.AuthHandler
+	EmployeeHandler       *handler.EmployeeHandler
+	LabHandler            *handler.LabHandler
+	MajorHandler          *handler.MajorHandler
+	SemesterHandler       *handler.SemesterHandler
+	SessionHandler        *handler.SessionHandler
+	StudentHandler        *handler.StudentHandler
+	StudyProgramHandler   *handler.StudyProgramHandler
+	SubjectHandler        *handler.SubjectHandler
+	GoogleAuthService     service.GoogleAuthService
+	OauthClientHandler    *handler.OauthClientHandler
+	OauthHandler          *handler.OauthHandler
+	PermissionHandler     *handler.PermissionHandler
+	RoleHandler           *handler.RoleHandler
+	SubjectLectureHandler *handler.SubjectLectureHandler
+	UserHandler           *handler.UserHandler
 }
 
 func InitContainer(db *gorm.DB, jwtService service.JWTService) *Container {
@@ -33,6 +34,7 @@ func InitContainer(db *gorm.DB, jwtService service.JWTService) *Container {
 	employeeRepo := repository.NewEmployeeRepository(db)
 	googleAuthService := service.NewGoogleAuthService(config.AppConfig)
 	studentRepo := repository.NewStudentRepository(db)
+	subjectLectureRepo := repository.NewSubjectLectureRepository(db)
 
 	authRepo := repository.NewAuthRepository(db)
 	userRepo := repository.NewUserRepository(db)
@@ -81,6 +83,9 @@ func InitContainer(db *gorm.DB, jwtService service.JWTService) *Container {
 	subjectUC := usecase.NewSubjectUseCase(subjectRepo, subjectSemesterRepo)
 	subjectHandler := handler.NewSubjectHandler(subjectUC)
 
+	subjectLectureUC := usecase.NewSubjectLectureUseCase(subjectLectureRepo)
+	subjectLectureHandler := handler.NewSubjectLectureHandler(subjectLectureUC)
+
 	oauthClientRepo := repository.NewOauthClientRepository(db)
 	oauthClientUC := usecase.NewOauthClientUseCase(oauthClientRepo)
 	oauthClientHandler := handler.NewOauthClientHandler(oauthClientUC)
@@ -92,19 +97,20 @@ func InitContainer(db *gorm.DB, jwtService service.JWTService) *Container {
 	userHandler := handler.NewUserHandler(userUC)
 
 	return &Container{
-		AuthHandler:         authHandler,
-		EmployeeHandler:     employeeHandler,
-		LabHandler:          labHandler,
-		MajorHandler:        majorHandler,
-		SemesterHandler:     semesterHandler,
-		SessionHandler:      sessionHandler,
-		StudentHandler:      studentHandler,
-		StudyProgramHandler: studyProgramHandler,
-		SubjectHandler:      subjectHandler,
-		OauthClientHandler:  oauthClientHandler,
-		OauthHandler:        oauthHandler,
-		PermissionHandler:   permissionHandler,
-		RoleHandler:         roleHandler,
-		UserHandler:         userHandler,
+		AuthHandler:           authHandler,
+		EmployeeHandler:       employeeHandler,
+		LabHandler:            labHandler,
+		MajorHandler:          majorHandler,
+		SemesterHandler:       semesterHandler,
+		SessionHandler:        sessionHandler,
+		StudentHandler:        studentHandler,
+		StudyProgramHandler:   studyProgramHandler,
+		SubjectHandler:        subjectHandler,
+		OauthClientHandler:    oauthClientHandler,
+		OauthHandler:          oauthHandler,
+		PermissionHandler:     permissionHandler,
+		RoleHandler:           roleHandler,
+		UserHandler:           userHandler,
+		SubjectLectureHandler: subjectLectureHandler,
 	}
 }

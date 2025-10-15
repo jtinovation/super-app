@@ -8,16 +8,16 @@ import (
 )
 
 type Subject struct {
-	ID             string `gorm:"type:char(36);primaryKey"`
-	StudyProgramID string `gorm:"column:m_study_program_id;type:char(36);not null"`
-	Code           string `gorm:"type:varchar(255);not null"`
-	Name           string `gorm:"type:varchar(255);not null"`
-	Status         string `gorm:"type:enum('ACTIVE','INACTIVE');default:'ACTIVE'"`
-	CreatedAt      time.Time
-	UpdatedAt      time.Time
-	DeletedAt      gorm.DeletedAt `gorm:"index"`
+	ID             string         `gorm:"type:char(36);primaryKey" json:"id"`
+	StudyProgramID string         `gorm:"column:m_study_program_id;type:char(36);not null" json:"study_program_id"`
+	Code           string         `gorm:"type:varchar(255);not null" json:"code"`
+	Name           string         `gorm:"type:varchar(255);not null" json:"name"`
+	Status         string         `gorm:"type:enum('ACTIVE','INACTIVE');default:'ACTIVE'" json:"status"`
+	CreatedAt      time.Time      `json:"created_at"`
+	UpdatedAt      time.Time      `json:"updated_at"`
+	DeletedAt      gorm.DeletedAt `gorm:"index" json:"deleted_at"`
 
-	StudyProgram     StudyProgram `gorm:"foreignKey:StudyProgramID"`
+	StudyProgram     StudyProgram `gorm:"foreignKey:StudyProgramID" json:"study_program"`
 	Semesters        []Semester   `gorm:"many2many:m_subject_semester;foreignKey:ID;joinForeignKey:m_subject_id;References:ID;joinReferences:m_semester_id"`
 	StudyProgramName string       `gorm:"column:study_program_name;<-:false;->"`
 	StudyProgramID2  string       `gorm:"column:study_program_id;<-:false;->"`

@@ -35,7 +35,7 @@ func ParsePaginationQuery(c *gin.Context) (*dto.QueryParams, bool) {
 		errorsMap["order"] = "Order must be either 'asc' or 'desc'"
 	}
 
-	var filter map[string]string
+	var filter map[string]interface{}
 	if err := json.Unmarshal([]byte(filterStr), &filter); err != nil && filterStr != "{}" && filterStr != "" {
 		errorsMap["filter"] = "Filter must be a valid JSON object"
 	}
